@@ -31,8 +31,11 @@ class Menu extends Phaser.Scene {
         this.add.text(centerX, centerY - textSpacer, 'Highway Escape', 
         menuConfig).setOrigin(.5);
         menuConfig.color = '#FFF';
+        menuConfig.backgroundColor = '#0000FA';
+        this.add.text(centerX, centerY, 'Use <-> to move the Bus', 
+        menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = '#AA00FE';
-        this.add.text(centerX, centerY, 'Press <- or -> to Play', 
+        this.add.text(centerX, centerY + textSpacer, 'Press <- or -> to Play', 
         menuConfig).setOrigin(.5);
 
         // define keys

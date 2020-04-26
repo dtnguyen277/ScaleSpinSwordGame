@@ -12,7 +12,8 @@ let game = new Phaser.Game(config);
 
 // define game settings
 game.settings = {
-    busSpeed: 1
+    busSpeed: 1,
+    obstacleFreq: 1000,
 };
 
 // keys that we will use

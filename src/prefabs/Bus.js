@@ -8,10 +8,10 @@ class Bus extends Phaser.GameObjects.Sprite {
     update() {
         console.log(this.x);
         // l/r movement
-        if (keyLEFT.isDown && this.x >= 42) {
+        if (keyLEFT.isDown && this.x >= 122) {
             this.x -= 2;
         }
-        else if (keyRIGHT.isDown && this.x <= 438) {
+        else if (keyRIGHT.isDown && this.x <= 358) {
             this.x += 2;
         }
     }
