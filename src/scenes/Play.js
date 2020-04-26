@@ -14,11 +14,13 @@ class Play extends Phaser.Scene {
         // road tile sprite
         this.roadScroll = this.add.tileSprite(0, 0, 480, 640, 'road').setOrigin(0, 0);
         this.p1Bus = new Bus(this, game.config.width/2, 400, 'bus').setOrigin(.5, -.25);
-        this.block = new Obstacle(this, 130, 400, 'block').setOrigin(.5, 0);
+        // this.block = new Obstacle(this, 130, 400, 'block').setOrigin(.5, 0);
 
         // spawn points for obstacle
-        var spawnPoints = [130, 192, 254];
-        var rand = Phaser.Math.Between(0,2);
+        this.spawnPoints = [130, 242, 354];
+        console.log(this.spawnPoints[1]);
+        rand = Phaser.Math.Between(0,2);
+        this.spawnObstacle();
 
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard
         .KeyCodes.LEFT);
@@ -35,8 +37,11 @@ class Play extends Phaser.Scene {
 
     spawnObstacle() {
         rand = Phaser.Math.Between(0,2);
-        
-        this.block = new Obstacle(this, 130, 400, 'block').setOrigin(.5, 0);
+        new Obstacle(this, this.spawnPoints[rand], 400, 'block').setOrigin(.5, 0);
+
+        this.time.delayedCall(1000, () => {
+            this.spawnObstacle();
+        }, null, this);
     }
 
 }

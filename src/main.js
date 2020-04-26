@@ -21,3 +21,5 @@ let keyLEFT, keyRIGHT;
 
 // global highscore value
 let hiScore = 0;
+
+var rand;
