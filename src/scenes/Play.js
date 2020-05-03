@@ -83,7 +83,7 @@ class Play extends Phaser.Scene {
     spawnObstacle() {
         randSpawn = Phaser.Math.Between(110, 374);
         rand2 = Phaser.Math.Between(0, this.obstacleSelect.length);
-        this.obs = new Obstacle(this, randSpawn, 0, this.obstacleSelect[4]).setOrigin(.5, 1);
+        this.obs = new Obstacle(this, randSpawn, 0, this.obstacleSelect[rand2]).setOrigin(.5, 1);
         this.obstacleList.push(this.obs);
         this.time.delayedCall(this.speed, () => {
             this.spawnObstacle();

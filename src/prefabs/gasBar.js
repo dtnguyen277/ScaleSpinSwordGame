@@ -2,8 +2,8 @@ class gasBar extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, texture, frame) {
         super(scene, x, y, texture, frame);
         scene.add.existing(this);
-        this.gas = 50;
-        this.gasScale = 50;
+        this.gas = 100;
+        this.gasScale = 100;
         this.changeAmt(0);
     }
 
