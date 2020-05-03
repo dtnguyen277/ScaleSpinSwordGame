@@ -9,10 +9,10 @@ class Bus extends Phaser.GameObjects.Sprite {
     update() {
         // l/r movement
         if (keyLEFT.isDown && this.x >= this.leftBound) {
-            this.x -= 2;
+            this.x -= 3;
         }
         else if (keyRIGHT.isDown && this.x <= this.rightBound) {
-            this.x += 2;
+            this.x += 3;
         }
     }
 }

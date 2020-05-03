@@ -12,9 +12,13 @@ let game = new Phaser.Game(config);
 
 // define game settings
 game.settings = {
-    busSpeed: 1,
-    obstacleFreq: 1250,
-    obstacleFreqScale: 500,
+    obstacleFreq: 1800,
+    minSpeed: 1800,
+    maxSpeed: 950,
+    busSpeed: 3,
+    minBus: 3,
+    maxBus: 6,
+    layers: 8,
 };
 
 // keys that we will use
@@ -23,4 +27,4 @@ let keyLEFT, keyRIGHT;
 // global highscore value
 let hiScore = 0;
 
-var randSpawn, rand2;
+var randSpawn, rand2, currBusSpeed;

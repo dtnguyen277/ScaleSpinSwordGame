@@ -5,6 +5,7 @@ class Obstacle extends Phaser.GameObjects.Sprite {
     }
 
     update() {
-        this.y += game.settings.busSpeed;
+        this.y += currBusSpeed;
     }
+    
 }
