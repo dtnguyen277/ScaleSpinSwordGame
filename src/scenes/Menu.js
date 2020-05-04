@@ -5,7 +5,9 @@ class Menu extends Phaser.Scene {
 
     // load music assets here
     preload() {
-
+        this.load.audio('bang', './assets/bang.wav');
+        this.load.audio('gasPower', './assets/gasPower.mp3');
+        this.load.audio('start', './assets/start.wav');
     }
 
     create() {
@@ -37,6 +39,11 @@ class Menu extends Phaser.Scene {
         menuConfig.backgroundColor = '#AA00FE';
         this.add.text(centerX, centerY + textSpacer, 'Press <- or -> to Play', 
         menuConfig).setOrigin(.5);
+        menuConfig.backgroundColor = "#00AA00"
+        this.add.text(centerX, centerY + textSpacer*2, 'Avoid Obstacles', 
+        menuConfig).setOrigin(.5);
+        this.add.text(centerX, centerY + textSpacer*3, 'and collect Gas', 
+        menuConfig).setOrigin(.5);
 
         // define keys
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
@@ -46,6 +53,7 @@ class Menu extends Phaser.Scene {
 
     update() {
         if (Phaser.Input.Keyboard.JustDown(keyLEFT) || Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+            this.sound.play('start');
             this.scene.start("playScene");
         }
 

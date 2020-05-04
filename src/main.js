@@ -14,10 +14,10 @@ let game = new Phaser.Game(config);
 game.settings = {
     obstacleFreq: 1800,
     minSpeed: 1800,
-    maxSpeed: 950,
+    maxSpeed: 800,
     busSpeed: 3,
     minBus: 3,
-    maxBus: 6,
+    maxBus: 4.5,
     layers: 8,
 };
 

@@ -23,8 +23,8 @@ class Play extends Phaser.Scene {
         // road tile sprite
         this.roadScroll = this.add.tileSprite(0, 0, 480, 640, 'road').setOrigin(0, 0);
         this.p1Bus = new Bus(this, game.config.width/2, 500, 'bus').setOrigin(.5, .5);
-        this.gasStatusBack = new gasBar(this, game.config.width/2- 180, 600, 'gray').setOrigin(0, .5);
-        this.gasStatus = new gasBar(this, game.config.width/2- 180, 600, 'red').setOrigin(0, .5);
+        this.gasStatusBack = new gasBar(this, game.config.width - 300, 625, 'gray').setOrigin(0, .5);
+        this.gasStatus = new gasBar(this, game.config.width - 300, 625, 'red').setOrigin(0, .5);
         // this.block = new Obstacle(this, 130, 400, 'block').setOrigin(.5, 0);
 
         // spawn points for obstacle
@@ -42,7 +42,26 @@ class Play extends Phaser.Scene {
         .KeyCodes.LEFT);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard
         .KeyCodes.RIGHT);
-        // this.gasStatus.changeAmt(100);
+
+        this.scoreConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'right',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+        }
+
+        this.score = 0;
+        this.timeScore = this.add.text(5, 600, "Score: " + this.score , this.scoreConfig);
+        this.incTime();
+
+        this.gasDecay();
+
+        this.gameOver = false;
     }
 
     update() {
@@ -50,10 +69,12 @@ class Play extends Phaser.Scene {
         game.settings.minSpeed);
         currBusSpeed = Phaser.Math.Clamp(game.settings.busSpeed, game.settings.minBus, 
         game.settings.maxBus);
-        //scroll Road on Y axis
-        this.roadScroll.tilePositionY -= currBusSpeed;
-        this.p1Bus.update();
-        this.gasStatus.update();
+        if (!this.gameOver) {
+            //scroll Road on Y axis
+            this.roadScroll.tilePositionY -= currBusSpeed;
+            this.p1Bus.update();
+            this.gasStatus.update();
+        }
         // iterate array and update all obstacles on array
         for (var i = 0; i < this.obstacleList.length; i++) {
             this.obstacleList[i].update();
@@ -61,6 +82,11 @@ class Play extends Phaser.Scene {
             if (this.checkCollision(this.p1Bus, this.obstacleList[i])) {
                 if (this.obstacleList[i].texture.key == 'gas') {
                     this.gasStatus.changeAmt(50);
+                    this.sound.play('gasPower');
+                }
+                else {
+                    this.sound.play('bang');
+                    this.score -= 5;
                 }
                 this.obstacleList[i].destroy();
                 this.obstacleList.splice(i, 1);
@@ -78,6 +104,16 @@ class Play extends Phaser.Scene {
                 console.log(this.speed + " " + currBusSpeed + " " + this.obstacleList.length);
             }
         }
+
+        if (this.gameOver) {
+            this.gameOverScene();
+            if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+                this.scene.start("menuScene");
+            }
+        }
+        if (this.gasStatus.gas <= 25) {
+            
+        }
     }
 
     spawnObstacle() {
@@ -86,7 +122,9 @@ class Play extends Phaser.Scene {
         this.obs = new Obstacle(this, randSpawn, 0, this.obstacleSelect[rand2]).setOrigin(.5, 1);
         this.obstacleList.push(this.obs);
         this.time.delayedCall(this.speed, () => {
-            this.spawnObstacle();
+            if (!this.gameOver) {
+                this.spawnObstacle();
+            }
         }, null, this);
     }
 
@@ -111,6 +149,35 @@ class Play extends Phaser.Scene {
         else {
             return false;
         }
+    }
+
+    incTime() {
+        this.time.delayedCall(1000, () => {
+            this.score++;
+            this.timeScore.text = "Score: " + this.score;
+            if (!this.gameOver) {
+                this.incTime();
+            }
+        }, null, this);
+    }
+
+    gasDecay() {
+        this.time.delayedCall(250, () => {
+            this.gasStatus.changeAmt(-1.5);
+            if (this.gasStatus.gas <= 0) {
+                this.gameOver = true;
+            }
+            this.gasDecay();
+        }, null, this);
+    }
+
+    gameOverScene() {
+        this.time.delayedCall(250, () => {
+            this.add.text(game.config.width/2, game.config.height/2, 
+            'GAME OVER', this.scoreConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 
+            'Press <- to go to Menu', this.scoreConfig).setOrigin(0.5);
+        }, null, this);
     }
 
 }
