@@ -14,9 +14,23 @@ class Play extends Phaser.Scene {
         this.load.image('gas', './assets/Gas.png');
         this.load.image('red', './assets/red.png');
         this.load.image('gray', './assets/gray.png');
+        this.load.spritesheet('explosion', './assets/PoliceExplosion.png', 
+        {frameWidth: 36, frameHeight: 55, startFrame: 0, endFrame: 5});
+        this.load.audio('music', './assets/HighwayMusic.mp3');
     }
 
     create() {
+        this.menuAudio = this.sound.add('music');
+        var musicConfig = {
+            mute: false,
+            volume: .05,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: true,
+            delay: 0
+        }
+        this.menuAudio.play(musicConfig);
         // rate of change variables
         this.obstROC = (game.settings.minSpeed - game.settings.maxSpeed) / game.settings.layers;
         this.busROC = (game.settings.maxBus - game.settings.minBus) / game.settings.layers;
@@ -32,7 +46,7 @@ class Play extends Phaser.Scene {
         // this.spawnPoints = [110, 242, 374];
         this.obstacleCount = 0;
         this.obstacleList = [];
-        this.obstacleSelect = [ 'block', 'car1', 'car2', 'police', 'gas' ];
+        this.obstacleSelect = [ 'block', 'car1', 'car2', 'gas' ];
         this.speed = game.settings.obstacleFreq;
         currBusSpeed = game.settings.busSpeed;
         this.spawnObstacle();
@@ -62,6 +76,14 @@ class Play extends Phaser.Scene {
         this.gasDecay();
 
         this.gameOver = false;
+        this.playGameOver = true;
+
+        this.anims.create({
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explosion', 
+            { start: 0, end: 5, first: 0 }),
+            frameRate: 30
+        });
     }
 
     update() {
@@ -106,13 +128,15 @@ class Play extends Phaser.Scene {
         }
 
         if (this.gameOver) {
+            this.menuAudio.stop();
             this.gameOverScene();
             if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
                 this.scene.start("menuScene");
             }
         }
+
         if (this.gasStatus.gas <= 25) {
-            
+            this.policeSpawn();
         }
     }
 
@@ -178,6 +202,54 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2 + 64, 
             'Press <- to go to Menu', this.scoreConfig).setOrigin(0.5);
         }, null, this);
+    }
+    policeSpawn() {
+        if (this.playGameOver) {
+            this.police1 = new Police(this, this.p1Bus.x + 75, 650, 'police').setOrigin(.5, .5);
+            this.police2 = new Police(this, this.p1Bus.x + 150, 600, 'police').setOrigin(.5, .5);
+            this.police3 = new Police(this, this.p1Bus.x - 75, 650, 'police').setOrigin(.5, .5);
+            this.police4 = new Police(this, this.p1Bus.x - 150, 600, 'police').setOrigin(.5, .5);
+            var sirenSound = this.sound.add('siren');
+            sirenSound.play();
+            this.time.delayedCall(3000, () => {
+                sirenSound.stop();
+            }, null, this);
+            this.playGameOver = false;
+        }
+        this.police1.update();
+        this.police2.update();
+        this.police3.update();
+        this.police4.update();
+        if (this.checkCollision(this.p1Bus, this.police1)) {
+            this.police1.isExploded = true;
+            this.carExplode(this.police1);
+        }
+        if (this.checkCollision(this.p1Bus, this.police2)) {
+            this.police2.isExploded = true;
+            this.carExplode(this.police2);
+        }
+        if (this.checkCollision(this.p1Bus, this.police3)) {
+            this.police3.isExploded = true;
+            this.carExplode(this.police3);
+        }
+        if (this.checkCollision(this.p1Bus, this.police4)) {
+            this.police4.isExploded = true;
+            this.carExplode(this.police4);
+        }
+    }
+
+    carExplode(ship) {
+        ship.alpha = 0;
+        ship.isExploded = false;
+        ship.destroy();
+        let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(.5, .5);
+        boom.anims.play('explode');
+        ship.x = -100;
+        ship.y = -100;
+        this.sound.play('bang');
+        boom.on('animationcomplete', () => {
+            boom.destroy();
+        });
     }
 
 }
