@@ -3,18 +3,20 @@ class gasBar extends Phaser.GameObjects.Sprite {
         super(scene, x, y, texture, frame);
         scene.add.existing(this);
         this.gas = 100;
-        this.gasScale = 100;
         this.changeAmt(0);
     }
 
     update() {
-        this.gasScale = Phaser.Math.Clamp(this.gas, 0, 100);
+        if (this.gas > 100) {
+            this.gas = 100;
+        }
+        console.log(" " + this.gas);
     }
 
     changeAmt(amt) {
         this.gas += amt;
         this.update();
-        this.scaleX = this.gasScale / 100;
+        this.scaleX = this.gas / 100;
     }
     
 }

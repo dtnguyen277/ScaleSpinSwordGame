@@ -95,8 +95,8 @@ class Play extends Phaser.Scene {
             //scroll Road on Y axis
             this.roadScroll.tilePositionY -= currBusSpeed;
             this.p1Bus.update();
-            this.gasStatus.update();
         }
+        this.gasStatus.update();
         // iterate array and update all obstacles on array
         for (var i = 0; i < this.obstacleList.length; i++) {
             this.obstacleList[i].update();
@@ -138,6 +138,7 @@ class Play extends Phaser.Scene {
         if (this.gasStatus.gas <= 25) {
             this.policeSpawn();
         }
+        
     }
 
     spawnObstacle() {

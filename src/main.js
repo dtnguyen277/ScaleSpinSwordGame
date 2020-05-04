@@ -1,5 +1,15 @@
 // Daniel Nguyen
 // Dnguy182@ucsc.edu
+// Rakhi Narain
+// rmnarain@ucsc.edu
+// Game Title: Highway Escape
+// Date of Completion: 05/03/2020
+// Creative Tilt
+/*
+While programming this game I used new methods that I learned a lot and used new things that 
+I had never done before. An example of this
+*/
+
 
 let config = {
      type: Phaser.CANVAS,
