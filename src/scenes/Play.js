@@ -4,7 +4,7 @@ class Play extends Phaser.Scene {
 
         // variables and settings
         this.ACCELERATION = 10000;
-        this.MAX_X_VEL = 500;   // pixels/second
+        this.MAX_X_VEL = 500;   // pixels/seconds
         this.MAX_Y_VEL = 500;
         this.DRAG = 6000;
         this.JUMP_VELOCITY = -650;
