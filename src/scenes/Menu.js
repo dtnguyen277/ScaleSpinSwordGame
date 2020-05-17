@@ -5,10 +5,8 @@ class Menu extends Phaser.Scene {
 
     // load music assets here
     preload() {
-        this.load.audio('bang', './assets/bang.wav');
-        this.load.audio('gasPower', './assets/gasPower.mp3');
-        this.load.audio('start', './assets/start.wav');
-        this.load.audio('siren', './assets/siren.wav');
+        // this.load.audio('start', './assets/start.wav');
+        // this.load.audio('siren', './assets/siren.wav');
     }
 
     create() {
@@ -31,7 +29,7 @@ class Menu extends Phaser.Scene {
         let centerY = game.config.height/2;
         let textSpacer = 64;
 
-        this.add.text(centerX, centerY - textSpacer, 'Highway Escape', 
+        this.add.text(centerX, centerY - textSpacer, 'Spin Sword Game', 
         menuConfig).setOrigin(.5);
         menuConfig.color = '#FFF';
         menuConfig.backgroundColor = '#0000FA';
@@ -54,7 +52,6 @@ class Menu extends Phaser.Scene {
 
     update() {
         if (Phaser.Input.Keyboard.JustDown(keyLEFT) || Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
-            this.sound.play('start');
             this.scene.start("playScene");
         }
 
