@@ -9,16 +9,15 @@
 
 */
 
-
 let config = {
      type: Phaser.CANVAS,
      pixelArt: true,
      width: 1280,
      height: 720,
      physics: {
-        default: "arcade",
-        arcade: {
-            //debug: true,
+        default: "matter",
+        matter: {
+            debug: false,
         }
     },
      scene: [ Menu, Play ],

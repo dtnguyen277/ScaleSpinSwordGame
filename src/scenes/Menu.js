@@ -33,15 +33,15 @@ class Menu extends Phaser.Scene {
         menuConfig).setOrigin(.5);
         menuConfig.color = '#FFF';
         menuConfig.backgroundColor = '#0000FA';
-        this.add.text(centerX, centerY, 'Use <-> to move the Bus', 
+        this.add.text(centerX, centerY, 'filler', 
         menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = '#AA00FE';
-        this.add.text(centerX, centerY + textSpacer, 'Press <- or -> to Play', 
+        this.add.text(centerX, centerY + textSpacer, 'filler', 
         menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = "#00AA00"
-        this.add.text(centerX, centerY + textSpacer*2, 'Avoid Obstacles', 
+        this.add.text(centerX, centerY + textSpacer*2, 'filler', 
         menuConfig).setOrigin(.5);
-        this.add.text(centerX, centerY + textSpacer*3, 'and collect Gas', 
+        this.add.text(centerX, centerY + textSpacer*3, 'filler', 
         menuConfig).setOrigin(.5);
 
         // define keys
