@@ -33,13 +33,13 @@ class Menu extends Phaser.Scene {
         menuConfig).setOrigin(.5);
         menuConfig.color = '#FFF';
         menuConfig.backgroundColor = '#0000FA';
-        this.add.text(centerX, centerY, 'filler', 
+        this.add.text(centerX, centerY, 'Use arrow keys to move and jump', 
         menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = '#AA00FE';
-        this.add.text(centerX, centerY + textSpacer, 'filler', 
+        this.add.text(centerX, centerY + textSpacer, 'Use A and D to control your sword', 
         menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = "#00AA00"
-        this.add.text(centerX, centerY + textSpacer*2, 'filler', 
+        this.add.text(centerX, centerY + textSpacer*2, 'Press < > to continue', 
         menuConfig).setOrigin(.5);
         this.add.text(centerX, centerY + textSpacer*3, 'filler', 
         menuConfig).setOrigin(.5);
