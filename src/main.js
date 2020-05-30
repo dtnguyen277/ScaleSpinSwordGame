@@ -14,6 +14,7 @@ let config = {
      pixelArt: true,
      width: 1280,
      height: 720,
+     zoom: 1.25,
      physics: {
         default: "matter",
         matter: {

@@ -15,6 +15,9 @@ class Play extends Phaser.Scene {
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
     preload() {
+        this.load.image('player', './assets/Player.png');
+        this.load.spritesheet('knight', './assets/LeafKnight2.png', 
+        {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet("kenney_sheet", "./assets/colored_transparent_packed.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -24,14 +27,22 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+        //animation config
+        this.anims.create({
+            repeat: -1,
+            key: 'walk',
+            frames: this.anims.generateFrameNumbers('knight', 
+            { start: 0, end: 9, first: 0 }),
+            frameRate: 15
+        });
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
-         null, {ignoreGravity: true}).setOrigin(.5, 1.5);
-        this.sword.body.position.y += 64;
+         null, {ignoreGravity: true}).setOrigin(.5, 1.6);
+        this.sword.body.position.y += 70;
         // this.sword.body.setCollideWorldBounds(true);
         // this.matter.world.setBounds(0, 0, game.config.width, game.config.height);
 
-        this.p1 = this.matter.add.sprite(game.config.width/2, game.config.height/2, "kenney_sheet", 402);
+        this.p1 = this.matter.add.sprite(game.config.width/2, game.config.height/2, "player");
         Phaser.Physics.Matter.Matter.Body.setInertia(this.p1.body, Infinity);
         this.matter.add.mouseSpring();
 
@@ -58,13 +69,17 @@ class Play extends Phaser.Scene {
         this.gameModeToggle = this.input.keyboard.addKey('N');
         this.p1Pos = new Phaser.Math.Vector2();
 
+         // setup camera
+        this.cameras.main.setBounds(0, 0, 1280*2, 720*2);
+        this.cameras.main.startFollow(this.p1, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+
     }
 
     update() {
         // attach sword to player
         this.sword.x = this.p1Pos.x;
         this.sword.y = this.p1Pos.y;
-        console.log(this.gameMode%3);
+        // console.log(this.gameMode%3);
         if (this.gameMode%3 != 1) {
             //directional controls 
             if (this.moveLeft.isDown) {
@@ -90,6 +105,18 @@ class Play extends Phaser.Scene {
                     this.SWORD_TURN_SPEED
                 );
             }
+        }
+        //walk anim
+        if (Phaser.Input.Keyboard.JustDown(this.moveLeft)) {
+            this.p1.setFlip(true, false);
+            this.p1.anims.play('walk');
+        }
+        else if (Phaser.Input.Keyboard.JustDown(this.moveRight)) {
+            this.p1.setFlip(false, false);
+            this.p1.anims.play('walk');
+        }
+        else if (this.p1.body.velocity.x == 0) {
+            this.p1.anims.stop();
         }
 
         // sword scale controls
@@ -123,6 +150,14 @@ class Play extends Phaser.Scene {
             this.swordBridge.x = -200;
             this.swordBridge.y = 0;
             this.swordBridge.scaleX = 1;
+        }
+
+        // walk anim
+        if (this.p1.body.velocity.x != 0) {
+            this.walkAmt = -1;
+        }
+        else {
+            this.walkAmt = 0;
         }
 
     }
