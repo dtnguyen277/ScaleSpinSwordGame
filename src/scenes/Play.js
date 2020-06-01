@@ -22,6 +22,8 @@ class Play extends Phaser.Scene {
         this.load.image('player', './assets/Player.png');
         this.load.spritesheet('knight', './assets/LeafKnight.png', 
         {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 9});
+        this.load.spritesheet('beetle', './assets/ScooterBeetle-Sheet.png', 
+        {frameWidth: 32, frameHeight: 16, startFrame: 0, endFrame: 2});
         this.load.spritesheet("kenney_sheet", "./assets/colored_transparent_packed.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -29,6 +31,7 @@ class Play extends Phaser.Scene {
         this.load.image('sword', './assets/sword.png');
         this.load.image('sword2', './assets/sword2.png');
         this.load.image('sword3', './assets/sword3.png');
+        this.load.image('beetle1', './assets/TacoBeetle.png');
         this.load.audio('jump', './assets/jump.mp3');
     }
 
@@ -49,13 +52,21 @@ class Play extends Phaser.Scene {
             { start: 6, end: 11, first: 6}),
             frameRate: 10
         });
+        this.anims.create({
+            repeat: -1,
+            key: 'bugWalk',
+            frames: this.anims.generateFrameNumbers('beetle', 
+            { start: 0, end: 2, first: 0}),
+            frameRate: 10
+        });
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
          null, {ignoreGravity: true}).setOrigin(.5, 1.5);
         this.sword.body.position.y += 32;
         this.sword.setSensor(true);
-        // this.sword.body.setCollideWorldBounds(true);
-        // this.matter.world.setBounds(0, 0, game.config.width, game.config.height);
+
+        this.bug = new Mob(this, game.config.width/2, 500, "beetle1");
+        this.bug.anims.play('bugWalk');
 
         this.p1 = this.matter.add.sprite(game.config.width/2, game.config.height/2, "player");
         Phaser.Physics.Matter.Matter.Body.setInertia(this.p1.body, Infinity);
@@ -65,7 +76,7 @@ class Play extends Phaser.Scene {
         this.matter.add.rectangle(game.config.width-8, game.config.height/2, 10, game.config.height, {isStatic: true});
         this.matter.add.rectangle(8, game.config.height/2, 10, game.config.height, {isStatic: true});
         this.matter.add.rectangle(game.config.width/2, game.config.height-150, 100, 10, {isStatic: true});
-        this.swordBridge = this.matter.add.sprite(-200, 0 - 100, 'sword', null, {isStatic: true, ignoreGravity: true});
+        this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
         this.swordBridge.angle = 90;
         // this.matter.add.joint(this.p1, this.sword, 50, 1, {ignoreGravity: true, density: 1});
 
@@ -83,6 +94,7 @@ class Play extends Phaser.Scene {
         this.gameModeToggle = this.input.keyboard.addKey('F');
         this.rotateBridge = this.input.keyboard.addKey('R');
         this.p1Pos = new Phaser.Math.Vector2();
+        this.swordBridgeSpawn = new Phaser.Math.Vector2();
 
          // setup camera
          //camera zoom 
@@ -94,9 +106,12 @@ class Play extends Phaser.Scene {
     }
 
     update() {
-        console.log(this.swordCurrentMod);
+        this.bug.update();
         // use this for mob collision
         // console.log(this.matter.overlap(this.sword, this.testing));
+
+        // update new spawn point for bridge mode
+        this.swordBridgeSpawn.set(this.p1.x, this.p1.y -60);
 
         // attach sword to player
         this.sword.x = this.p1Pos.x;
@@ -145,16 +160,21 @@ class Play extends Phaser.Scene {
             this.p1.anims.stop();
         }
         if (this.gameMode % 3 == 1) {
+            //rotate bridge sword controls
+            if (this.rotateBridge.isDown) {
+                this.swordBridge.angle += 1;
+            }
             // sword scale controls
-            // put in if gamemode == 2
-            // WIP
             if (Phaser.Input.Keyboard.JustDown(this.scaleDown)) {
                 console.log('test');
                 // this.swordBridge.scaleX += .1;
                 this.swordCurrent--;
+                if (this.swordCurrent == -1) {
+                    this.swordCurrent = this.maxSwordLvl-1;
+                }
                 this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
                 this.swordBridge.destroy(true);
-                this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
                 this.swordBridge.angle = 90;
             }
             if (Phaser.Input.Keyboard.JustDown(this.scaleUp)) {
@@ -162,7 +182,7 @@ class Play extends Phaser.Scene {
                 this.swordCurrent++;
                 this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
                 this.swordBridge.destroy(true);
-                this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
                 this.swordBridge.angle = 90;
             }
         }
@@ -173,10 +193,10 @@ class Play extends Phaser.Scene {
         // gamemode 1 is bridge mode scale and change position of sword
         // gamemode 2 is walk around with no swinging sword
         if (this.gameMode % 3 == 1 && this.oneToggle) {
-            this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
+            this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
             this.swordBridge.angle = 90;
             this.swordBridge.x = this.p1.x;
-            this.swordBridge.y = this.p1.y -100;
+            this.swordBridge.y = this.p1.y -60;
             this.p1Pos.set(-100, -100);
             this.swordBridge.setStatic(0);
             this.oneToggle = false;
