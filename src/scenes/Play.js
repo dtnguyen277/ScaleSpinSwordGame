@@ -11,18 +11,24 @@ class Play extends Phaser.Scene {
         var touchingGround = false;
         this.gameMode = 0;
         this.oneToggle = true;
+        this.swordSize = [ 'sword', 'sword2', 'sword3' ];
+        this.swordCurrent = 0;
+        this.maxSwordLvl = 3;
+        this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
     }
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
     preload() {
         this.load.image('player', './assets/Player.png');
-        this.load.spritesheet('knight', './assets/LeafKnight2.png', 
+        this.load.spritesheet('knight', './assets/LeafKnight.png', 
         {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet("kenney_sheet", "./assets/colored_transparent_packed.png", {
             frameWidth: 16,
             frameHeight: 16
         });
         this.load.image('sword', './assets/sword.png');
+        this.load.image('sword2', './assets/sword2.png');
+        this.load.image('sword3', './assets/sword3.png');
         this.load.audio('jump', './assets/jump.mp3');
     }
 
@@ -38,15 +44,15 @@ class Play extends Phaser.Scene {
         });
         this.anims.create({
             repeat: -1,
-            key: 'jump',
+            key: 'jump1',
             frames: this.anims.generateFrameNumbers('knight', 
-            { start: 4, end: 9, first: 4}),
+            { start: 6, end: 11, first: 6}),
             frameRate: 10
         });
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
-         null, {ignoreGravity: true}).setOrigin(.5, 1.6);
-        this.sword.body.position.y += 70;
+         null, {ignoreGravity: true}).setOrigin(.5, 1.5);
+        this.sword.body.position.y += 32;
         this.sword.setSensor(true);
         // this.sword.body.setCollideWorldBounds(true);
         // this.matter.world.setBounds(0, 0, game.config.width, game.config.height);
@@ -74,7 +80,8 @@ class Play extends Phaser.Scene {
         this.moveRight = this.input.keyboard.addKey('D');
         this.moveLeft = this.input.keyboard.addKey('A');
         this.jump = this.input.keyboard.addKey('SPACE');
-        this.gameModeToggle = this.input.keyboard.addKey('T');
+        this.gameModeToggle = this.input.keyboard.addKey('F');
+        this.rotateBridge = this.input.keyboard.addKey('R');
         this.p1Pos = new Phaser.Math.Vector2();
 
          // setup camera
@@ -87,6 +94,7 @@ class Play extends Phaser.Scene {
     }
 
     update() {
+        console.log(this.swordCurrentMod);
         // use this for mob collision
         // console.log(this.matter.overlap(this.sword, this.testing));
 
@@ -105,7 +113,7 @@ class Play extends Phaser.Scene {
             //jump control
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
                 //this.p1.anims.pause();
-                this.p1.anims.play('jump'); // > + jump animation needs to pause at the middle frame
+                this.p1.anims.play('jump1'); // > + jump animation needs to pause at the middle frame
                 this.p1.setVelocityY(-this.ACCELERATION*6);
                 this.sound.play('jump');
                 this.touchingGround = false; 
@@ -136,17 +144,27 @@ class Play extends Phaser.Scene {
         else if (this.p1.body.velocity.x == 0) {
             this.p1.anims.stop();
         }
-
-        // sword scale controls
-        // put in if gamemode == 2
-        // WIP
-        if (this.scaleDown.isDown) {
-            // Phaser.Physics.Matter.Matter.Body.scale(this.swordBridge.body, 1.01, 1);
-            this.swordBridge.scaleX += .1;
-        }
-        if (this.scaleUp.isDown) {
-            // Phaser.Physics.Matter.Matter.Body.scale(this.swordBridge.body, .99, 1);
-            this.swordBridge.scaleX -= .1;
+        if (this.gameMode % 3 == 1) {
+            // sword scale controls
+            // put in if gamemode == 2
+            // WIP
+            if (Phaser.Input.Keyboard.JustDown(this.scaleDown)) {
+                console.log('test');
+                // this.swordBridge.scaleX += .1;
+                this.swordCurrent--;
+                this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
+                this.swordBridge.destroy(true);
+                this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge.angle = 90;
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.scaleUp)) {
+                // this.swordBridge.scaleX -= .1;
+                this.swordCurrent++;
+                this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
+                this.swordBridge.destroy(true);
+                this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge.angle = 90;
+            }
         }
 
         //change game mode mode
@@ -155,7 +173,7 @@ class Play extends Phaser.Scene {
         // gamemode 1 is bridge mode scale and change position of sword
         // gamemode 2 is walk around with no swinging sword
         if (this.gameMode % 3 == 1 && this.oneToggle) {
-            this.swordBridge = this.matter.add.sprite(-200, 0 - 100, 'sword', null, {isStatic: true, ignoreGravity: true});
+            this.swordBridge = this.matter.add.sprite(this.p1.x, this.p1.y -100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
             this.swordBridge.angle = 90;
             this.swordBridge.x = this.p1.x;
             this.swordBridge.y = this.p1.y -100;
@@ -172,15 +190,6 @@ class Play extends Phaser.Scene {
             this.swordBridge.y = 0;
             this.swordBridge.scaleX = 1;
         }
-
-        // walk anim
-        if (this.p1.body.velocity.x != 0) {
-            this.walkAmt = -1;
-        }
-        else {
-            this.walkAmt = 0;
-        }
-
     }
 
 
