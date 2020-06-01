@@ -28,10 +28,6 @@ class Play extends Phaser.Scene {
 
     create() {
 
-        //camera zoom 
-        this.cameras.main.startFollow('player', true, .9, .9); 
-        this.cameras.main.setZoom(2); 
-
         //animation config
         this.anims.create({
             repeat: -1,
@@ -51,6 +47,7 @@ class Play extends Phaser.Scene {
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
          null, {ignoreGravity: true}).setOrigin(.5, 1.6);
         this.sword.body.position.y += 70;
+        this.sword.setSensor(true);
         // this.sword.body.setCollideWorldBounds(true);
         // this.matter.world.setBounds(0, 0, game.config.width, game.config.height);
 
@@ -77,17 +74,22 @@ class Play extends Phaser.Scene {
         this.moveRight = this.input.keyboard.addKey('D');
         this.moveLeft = this.input.keyboard.addKey('A');
         this.jump = this.input.keyboard.addKey('SPACE');
-        this.moveTowardsSword = this.input.keyboard.addKey('S');
-        this.gameModeToggle = this.input.keyboard.addKey('N');
+        this.gameModeToggle = this.input.keyboard.addKey('T');
         this.p1Pos = new Phaser.Math.Vector2();
 
          // setup camera
+         //camera zoom 
         this.cameras.main.setBounds(0, 0, 1280*2, 720*2);
-        this.cameras.main.startFollow(this.p1, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.startFollow(this.p1, true, .9, .9); 
+        // this.cameras.main.startFollow(this.p1, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.setZoom(2);
 
     }
 
     update() {
+        // use this for mob collision
+        // console.log(this.matter.overlap(this.sword, this.testing));
+
         // attach sword to player
         this.sword.x = this.p1Pos.x;
         this.sword.y = this.p1Pos.y;
@@ -103,7 +105,6 @@ class Play extends Phaser.Scene {
             //jump control
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
                 //this.p1.anims.pause();
-                this.p1.setFlip(true, false);
                 this.p1.anims.play('jump'); // > + jump animation needs to pause at the middle frame
                 this.p1.setVelocityY(-this.ACCELERATION*6);
                 this.sound.play('jump');
@@ -137,6 +138,7 @@ class Play extends Phaser.Scene {
         }
 
         // sword scale controls
+        // put in if gamemode == 2
         // WIP
         if (this.scaleDown.isDown) {
             // Phaser.Physics.Matter.Matter.Body.scale(this.swordBridge.body, 1.01, 1);
@@ -153,6 +155,8 @@ class Play extends Phaser.Scene {
         // gamemode 1 is bridge mode scale and change position of sword
         // gamemode 2 is walk around with no swinging sword
         if (this.gameMode % 3 == 1 && this.oneToggle) {
+            this.swordBridge = this.matter.add.sprite(-200, 0 - 100, 'sword', null, {isStatic: true, ignoreGravity: true});
+            this.swordBridge.angle = 90;
             this.swordBridge.x = this.p1.x;
             this.swordBridge.y = this.p1.y -100;
             this.p1Pos.set(-100, -100);
