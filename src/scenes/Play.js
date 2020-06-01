@@ -27,13 +27,25 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+
+        //camera zoom 
+        this.cameras.main.startFollow('player', true, .9, .9); 
+        this.cameras.main.setZoom(2); 
+
         //animation config
         this.anims.create({
             repeat: -1,
             key: 'walk',
             frames: this.anims.generateFrameNumbers('knight', 
-            { start: 0, end: 9, first: 0 }),
-            frameRate: 15
+            { start: 0, end: 3, first: 0 }),
+            frameRate: 4
+        });
+        this.anims.create({
+            repeat: -1,
+            key: 'jump',
+            frames: this.anims.generateFrameNumbers('knight', 
+            { start: 4, end: 9, first: 4}),
+            frameRate: 10
         });
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
@@ -90,9 +102,12 @@ class Play extends Phaser.Scene {
             }
             //jump control
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
+                //this.p1.anims.pause();
+                this.p1.setFlip(true, false);
+                this.p1.anims.play('jump'); // > + jump animation needs to pause at the middle frame
                 this.p1.setVelocityY(-this.ACCELERATION*6);
                 this.sound.play('jump');
-                this.touchingGround = false;
+                this.touchingGround = false; 
             }
             if (this.gameMode%3 == 0) {
                 this.p1Pos.set(this.p1.x, this.p1.y);
@@ -110,10 +125,12 @@ class Play extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.moveLeft)) {
             this.p1.setFlip(true, false);
             this.p1.anims.play('walk');
+            
         }
         else if (Phaser.Input.Keyboard.JustDown(this.moveRight)) {
             this.p1.setFlip(false, false);
             this.p1.anims.play('walk');
+            
         }
         else if (this.p1.body.velocity.x == 0) {
             this.p1.anims.stop();

@@ -10,25 +10,24 @@
 */
 
 let config = {
-     type: Phaser.CANVAS,
-     pixelArt: true,
-     width: 1280,
-     height: 720,
-     zoom: 1.25,
-     physics: {
-        default: "matter",
-        matter: {
-            debug: true,
-        }
-    },
-     scene: [ Menu, Play ],
+    type: Phaser.CANVAS,
+    pixelArt: true,
+    width: 1280,
+    height: 720,
+    physics: {
+       default: "matter",
+       matter: {
+           debug: true,
+       }
+   },
+    scene: [ Menu, Play ],
 };
 
 let game = new Phaser.Game(config);
 
 // define game settings
 game.settings = {
-    
+   
 };
 
 // keys that we will use
