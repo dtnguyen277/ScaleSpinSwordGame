@@ -3,7 +3,7 @@ class Play extends Phaser.Scene {
         super("playScene");
 
         // variables and settings
-        this.ACCELERATION = 2;
+        this.ACCELERATION = 1;
         this.SWORD_TURN_SPEED = Math.PI / 30;
         this.SWORD_SCALE_SPEED = 0.05;
         this.MIN_SWORD_SCALE = 0.25
@@ -20,8 +20,8 @@ class Play extends Phaser.Scene {
     // load assets here: Bus, Infinite Scrolling road on Y axis
     preload() {
         this.load.image('player', './assets/Player.png');
-        this.load.spritesheet('knight', './assets/LeafKnight.png', 
-        {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 9});
+        this.load.spritesheet('knight', './assets/LeafKnightSmall.png', 
+        {frameWidth: 25, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('beetle', './assets/ScooterBeetle-Sheet.png', 
         {frameWidth: 32, frameHeight: 16, startFrame: 0, endFrame: 2});
         this.load.spritesheet("kenney_sheet", "./assets/colored_transparent_packed.png", {
@@ -129,7 +129,7 @@ class Play extends Phaser.Scene {
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
                 //this.p1.anims.pause();
                 this.p1.anims.play('jump1'); // > + jump animation needs to pause at the middle frame
-                this.p1.setVelocityY(-this.ACCELERATION*6);
+                this.p1.setVelocityY(-this.ACCELERATION*12);
                 this.sound.play('jump');
                 this.touchingGround = false; 
             }
