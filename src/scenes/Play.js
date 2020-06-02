@@ -3,7 +3,8 @@ class Play extends Phaser.Scene {
         super("playScene");
 
         // variables and settings
-        this.ACCELERATION = 1;
+        this.ACCELERATION = 1.5;
+        this.JUMP_ACCELERATION = 10;
         this.SWORD_TURN_SPEED = Math.PI / 30;
         this.SWORD_SCALE_SPEED = 0.05;
         this.MIN_SWORD_SCALE = 0.25
@@ -19,24 +20,44 @@ class Play extends Phaser.Scene {
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
     preload() {
-        this.load.image('player', './assets/Player.png');
-        this.load.spritesheet('knight', './assets/LeafKnightSmall.png', 
+        this.load.path = "./assets/"
+        this.load.image('player', 'Player.png');
+        this.load.spritesheet('knight', 'LeafKnightSmall.png', 
         {frameWidth: 25, frameHeight: 32, startFrame: 0, endFrame: 9});
-        this.load.spritesheet('beetle', './assets/ScooterBeetle-Sheet.png', 
+        this.load.spritesheet('beetle', 'ScooterBeetle-Sheet.png', 
         {frameWidth: 32, frameHeight: 16, startFrame: 0, endFrame: 2});
-        this.load.spritesheet("kenney_sheet", "./assets/colored_transparent_packed.png", {
+        this.load.spritesheet("kenney_sheet", "colored_transparent_packed.png", {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.image('sword', './assets/sword.png');
-        this.load.image('sword2', './assets/sword2.png');
-        this.load.image('sword3', './assets/sword3.png');
-        this.load.image('beetle1', './assets/TacoBeetle.png');
-        this.load.audio('jump', './assets/jump.mp3');
+        this.load.image('sword', 'sword.png');
+        this.load.image('sword2', 'sword2.png');
+        this.load.image('sword3', 'sword3.png');
+        this.load.image('beetle1', 'TacoBeetle.png');
+        this.load.audio('jump', 'jump.mp3');
+        this.load.image("tiles", "DirtTileset.png");
+        this.load.tilemapTiledJSON("map", "Level1.json");
     }
 
     create() {
+        // load map
+        const map = this.add.tilemap("map");
+        const tileset = map.addTilesetImage("DirtTileset", "tiles");
 
+        const backgroundLayer = map.createStaticLayer("Background", tileset, 0, 0);
+        const groundLayer = map.createStaticLayer("Ground", tileset, 0, 0);
+
+        groundLayer.setCollisionByProperty({ collides: true });
+
+        this.matter.world.convertTilemapLayer(groundLayer);
+        //debug colors
+        // const debugGraphics = this.add.graphics().setAlpha(0.75);
+        // groundLayer.renderDebug(debugGraphics, {
+        //     tileColor: null,    // color of non-colliding tiles
+        //     collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255),    // color of colliding tiles
+        //     faceColor: new Phaser.Display.Color(40, 39, 37, 255)                // color of colliding face edges
+        // });
+        
         //animation config
         this.anims.create({
             repeat: -1,
@@ -59,26 +80,25 @@ class Play extends Phaser.Scene {
             { start: 0, end: 2, first: 0}),
             frameRate: 10
         });
+
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
          null, {ignoreGravity: true}).setOrigin(.5, 1.5);
         this.sword.body.position.y += 32;
         this.sword.setSensor(true);
 
+        // test bug
         this.bug = new Mob(this, game.config.width/2, 500, "beetle1");
         this.bug.anims.play('bugWalk');
-
-        this.p1 = this.matter.add.sprite(game.config.width/2, game.config.height/2, "player");
+        
+        // player
+        const p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player");
+        this.p1 = this.matter.add.sprite(p1Spawn.x, p1Spawn.y, "player");
         Phaser.Physics.Matter.Matter.Body.setInertia(this.p1.body, Infinity);
         this.matter.add.mouseSpring();
 
-        this.matter.add.rectangle(game.config.width/2, game.config.height-8, game.config.width, 10, {isStatic: true});
-        this.matter.add.rectangle(game.config.width-8, game.config.height/2, 10, game.config.height, {isStatic: true});
-        this.matter.add.rectangle(8, game.config.height/2, 10, game.config.height, {isStatic: true});
-        this.matter.add.rectangle(game.config.width/2, game.config.height-150, 100, 10, {isStatic: true});
         this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
         this.swordBridge.angle = 90;
-        // this.matter.add.joint(this.p1, this.sword, 50, 1, {ignoreGravity: true, density: 1});
 
         this.matter.world.on("collisionactive", (p1, ground) => {
             this.touchingGround = true;
@@ -106,6 +126,7 @@ class Play extends Phaser.Scene {
     }
 
     update() {
+        // console.log(this.touchingGround);
         this.bug.update();
         // use this for mob collision
         // console.log(this.matter.overlap(this.sword, this.testing));
@@ -129,7 +150,7 @@ class Play extends Phaser.Scene {
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
                 //this.p1.anims.pause();
                 this.p1.anims.play('jump1'); // > + jump animation needs to pause at the middle frame
-                this.p1.setVelocityY(-this.ACCELERATION*12);
+                this.p1.setVelocityY(-this.JUMP_ACCELERATION);
                 this.sound.play('jump');
                 this.touchingGround = false; 
             }
