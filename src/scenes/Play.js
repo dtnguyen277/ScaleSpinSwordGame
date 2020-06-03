@@ -12,7 +12,7 @@ class Play extends Phaser.Scene {
         var touchingGround = false;
         this.gameMode = 0;
         this.oneToggle = true;
-        this.swordSize = [ 'sword', 'sword2', 'sword3' ];
+        this.swordSize = [ 'sword', 'swordMed', 'swordLarge' ];
         this.swordCurrent = 0;
         this.maxSwordLvl = 3;
         this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
@@ -31,8 +31,8 @@ class Play extends Phaser.Scene {
             frameHeight: 16
         });
         this.load.image('sword', 'sword.png');
-        this.load.image('sword2', 'sword2.png');
-        this.load.image('sword3', 'sword3.png');
+        this.load.image('swordMed', 'swordMed.png');
+        this.load.image('swordLarge', 'swordLarge.png');
         this.load.image('beetle1', 'TacoBeetle.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.image("tiles", "DirtTileset.png");
