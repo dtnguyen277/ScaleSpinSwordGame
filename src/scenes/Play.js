@@ -30,9 +30,9 @@ class Play extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         });
-        this.load.image('sword', 'sword.png');
-        this.load.image('sword2', 'sword2.png');
-        this.load.image('sword3', 'sword3.png');
+        this.load.image('sword', 'Sword.png');
+        this.load.image('sword2', 'Sword2.png');
+        this.load.image('sword3', 'Sword3.png');
         this.load.image('beetle1', 'TacoBeetle.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.image("tiles", "DirtTileset.png");
