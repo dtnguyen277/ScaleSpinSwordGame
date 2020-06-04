@@ -18,7 +18,7 @@ let config = {
        default: "matter",
        matter: {
            debug: true,
-       }
+    }
    },
     scene: [ Menu, Play ],
 };

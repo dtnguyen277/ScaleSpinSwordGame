@@ -3,7 +3,8 @@
     {
      "export":
         {
-         "target":"."
+         "format":"json",
+         "target":"Level1.2.json"
         }
     },
  "height":32,
@@ -18,6 +19,64 @@
          "type":"tilelayer",
          "visible":true,
          "width":142,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":10,
+         "image":"bkg.png",
+         "name":"bkg",
+         "offsetx":1,
+         "offsety":87,
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":19,
+         "image":"bkg.png",
+         "name":"Copy of bkg",
+         "offsetx":625,
+         "offsety":128,
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":20,
+         "image":"bkg.png",
+         "name":"Copy of Copy of bkg",
+         "offsetx":1264,
+         "offsety":128,
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":18,
+         "image":"background2.png",
+         "name":"Image Layer 2",
+         "offsetx":624,
+         "offsety":32,
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":22,
+         "image":"background2.png",
+         "name":"Copy of Image Layer 2",
+         "opacity":1,
+         "type":"imagelayer",
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -143,13 +202,13 @@
                 {
                  "height":32,
                  "id":22,
-                 "name":"Player",
+                 "name":"Player ",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":143.5,
-                 "y":430.5
+                 "x":1101.5,
+                 "y":310.5
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -157,7 +216,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":10,
+ "nextlayerid":23,
  "nextobjectid":23,
  "orientation":"orthogonal",
  "renderorder":"right-down",
@@ -295,6 +354,24 @@
                 }, 
                 {
                  "id":20,
+                 "properties":[
+                        {
+                         "name":"collides",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":24,
+                 "properties":[
+                        {
+                         "name":"collides",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":32,
                  "properties":[
                         {
                          "name":"collides",

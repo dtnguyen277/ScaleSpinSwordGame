@@ -3,19 +3,20 @@ class Play extends Phaser.Scene {
         super("playScene");
 
         // variables and settings
-        this.ACCELERATION = 1.5;
-        this.JUMP_ACCELERATION = 10;
+        this.ACCELERATION = 2;
+        this.JUMP_ACCELERATION = 8;
         this.SWORD_TURN_SPEED = Math.PI / 30;
         this.SWORD_SCALE_SPEED = 0.05;
         this.MIN_SWORD_SCALE = 0.25
         this.MAX_SWORD_SCALE = 3;
-        var touchingGround = false;
         this.gameMode = 0;
+        this.touchingGround = true;
         this.oneToggle = true;
         this.swordSize = [ 'sword', 'swordMed', 'swordLarge' ];
         this.swordCurrent = 0;
         this.maxSwordLvl = 3;
         this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
+        this.bugList = [];
     }
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
@@ -83,26 +84,42 @@ class Play extends Phaser.Scene {
 
         // create sword
         this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
-         null, {ignoreGravity: true}).setOrigin(.5, 1.5);
+         null, {ignoreGravity: true, label: 'sword'}).setOrigin(.5, 1.5);
         this.sword.body.position.y += 32;
         this.sword.setSensor(true);
 
         // test bug
-        this.bug = new Mob(this, game.config.width/2, 500, "beetle1");
-        this.bug.anims.play('bugWalk');
+        let bugObjects = map.filterObjects("Enemy Spawn", obj => obj.name === "Enemy");
+        bugObjects.map((element) => {
+            let newBug = new Mob(this, element.x, element.y, "beetle1", null, {label: 'bug'});
+            this.bugList.push(newBug);
+        });
         
-        // player
-        const p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player");
+        // player ----------
+        const p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
         this.p1 = this.matter.add.sprite(p1Spawn.x, p1Spawn.y, "player");
-        Phaser.Physics.Matter.Matter.Body.setInertia(this.p1.body, Infinity);
+        this.p1.isTouching = { left: false, right: false, ground: false };
+        const { Body, Bodies } = Phaser.Physics.Matter.Matter;
+        const { width: w, height: h } = this.p1;
+        const mainBody = Bodies.rectangle(w/2, h/2, w, h);
+        this.p1.sensors = {
+            bottom: Bodies.rectangle(w/2, h, w * 0.25, 2, { isSensor: true, label: 'p1Bottom' }),
+            left: Bodies.rectangle(0, h * 0.5, 2, w * 0.25, { isSensor: true, label: 'p1Left'  }),
+            right: Bodies.rectangle(w, h * 0.5, 2, w * 0.25, { isSensor: true, label: 'p1Right'  }),
+        }
+        const compoundBody = Body.create({
+            parts: [mainBody, this.p1.sensors.bottom, this.p1.sensors.left, this.p1.sensors.right],
+            frictionStatic: 0,
+            frictionAir: 0.02,
+            friction: 0.1
+        });
+        this.p1.setExistingBody(compoundBody);
+        this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
+        this.p1.setPosition(p1Spawn.x, p1Spawn.y);
         this.matter.add.mouseSpring();
 
         this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
         this.swordBridge.angle = 90;
-
-        this.matter.world.on("collisionactive", (p1, ground) => {
-            this.touchingGround = true;
-         });
 
         // add all necessary keys
         cursors = this.input.keyboard.createCursorKeys();
@@ -118,17 +135,46 @@ class Play extends Phaser.Scene {
 
          // setup camera
          //camera zoom 
-        this.cameras.main.setBounds(0, 0, 1280*2, 720*2);
+        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.startFollow(this.p1, true, .9, .9); 
-        // this.cameras.main.startFollow(this.p1, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setZoom(2);
-
+        // this.matter.world.on('collisionstart', function (event) {
+        //     for (var i = 0; i < event.pairs.length; i++) {
+        //         var bodyA = event.pairs[i].bodyA;
+        //         var bodyB = event.pairs[i].bodyB;
+        //         if (bodyA.label === 'p1Bottom' || bodyB.label === 'p1Bottom') {
+        //             // this.touchingGround = true;
+        //         }
+        //     }
+        // });
+        this.matter.world.on('collisionactive', function (event) {
+            for (var i = 0; i < event.pairs.length; i++) {
+                var bodyA = event.pairs[i].bodyA;
+                var bodyB = event.pairs[i].bodyB;
+                // console.log(bodyA.label + " " + bodyB.label);
+                if (bodyA.label === 'p1Bottom' || bodyB.label === 'p1Bottom') {
+                    this.scene.touchingGround = true;
+                }
+                if (bodyA.label === 'p1Right' || bodyB.label === 'p1Right') {
+                    this.scene.p1.x -= .08;
+                }
+                if (bodyA.label === 'p1Bp1Leftottom' || bodyB.label === 'p1Left') {
+                    this.scene.p1.x += .08;
+                }
+                if (bodyA.label === 'sword' && bodyB.label === 'bug') {
+                    console.log(bodyB.gameObject);
+                    bodyB.gameObject.destroyObj();
+                }
+                if (bodyA.label === 'bug' && bodyB.label === 'sword') {
+                    // console.log('hit');
+                    bodyA.gameObject.destroyObj();
+                }
+            }
+        });
     }
 
     update() {
-        // console.log(this.touchingGround);
-        this.bug.update();
-        // use this for mob collision
+        // use this for mob collision and sword
         // console.log(this.matter.overlap(this.sword, this.testing));
 
         // update new spawn point for bridge mode
@@ -137,14 +183,16 @@ class Play extends Phaser.Scene {
         // attach sword to player
         this.sword.x = this.p1Pos.x;
         this.sword.y = this.p1Pos.y;
-        // console.log(this.gameMode%3);
+
         if (this.gameMode%3 != 1) {
             //directional controls 
             if (this.moveLeft.isDown) {
                 this.p1.setVelocityX(-this.ACCELERATION);
+                // this.p1.applyForce({ x:-.005, y: 0 });
             }
             else if (this.moveRight.isDown) {
                 this.p1.setVelocityX(this.ACCELERATION);
+                // this.p1.applyForce({ x:.005, y: 0 });
             }
             //jump control
             if (Phaser.Input.Keyboard.JustDown(this.jump) && this.touchingGround) {
@@ -152,8 +200,11 @@ class Play extends Phaser.Scene {
                 this.p1.anims.play('jump1'); // > + jump animation needs to pause at the middle frame
                 this.p1.setVelocityY(-this.JUMP_ACCELERATION);
                 this.sound.play('jump');
-                this.touchingGround = false; 
+                this.touchingGround = false;
             }
+            // if (this.p1.body.velocity.x > 7) this.p1.setVelocityX(.25);
+            // else if (this.p1.body.velocity.x < -7) this.p1.setVelocityX(-.25);
+
             if (this.gameMode%3 == 0) {
                 this.p1Pos.set(this.p1.x, this.p1.y);
                 // make sword angle follow cursor
@@ -187,7 +238,6 @@ class Play extends Phaser.Scene {
             }
             // sword scale controls
             if (Phaser.Input.Keyboard.JustDown(this.scaleDown)) {
-                console.log('test');
                 // this.swordBridge.scaleX += .1;
                 this.swordCurrent--;
                 if (this.swordCurrent == -1) {
@@ -233,5 +283,10 @@ class Play extends Phaser.Scene {
         }
     }
 
+    resetTouching() {
+        this.p1.isTouching.left = false;
+        this.p1.isTouching.right = false;
+        this.p1.isTouching.ground = false;
+    }
 
 }
