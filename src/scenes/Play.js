@@ -4,11 +4,13 @@ class Play extends Phaser.Scene {
 
         // variables and settings
         this.ACCELERATION = 2;
-        this.JUMP_ACCELERATION = 8;
+        this.JUMP_ACCELERATION = 6;
         this.SWORD_TURN_SPEED = Math.PI / 30;
         this.SWORD_SCALE_SPEED = 0.05;
         this.MIN_SWORD_SCALE = 0.25
         this.MAX_SWORD_SCALE = 3;
+        this.maxHealth = 3;
+        this.p1Health = this.maxHealth;
         this.gameMode = 0;
         this.touchingGround = true;
         this.oneToggle = true;
@@ -37,6 +39,7 @@ class Play extends Phaser.Scene {
         this.load.image('beetle1', 'TacoBeetle.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.image("tiles", "DirtTileset.png");
+        this.load.image('bkg', 'bkg.png');
         this.load.tilemapTiledJSON("map", "Level1.json");
     }
 
@@ -101,7 +104,7 @@ class Play extends Phaser.Scene {
         this.p1.isTouching = { left: false, right: false, ground: false };
         const { Body, Bodies } = Phaser.Physics.Matter.Matter;
         const { width: w, height: h } = this.p1;
-        const mainBody = Bodies.rectangle(w/2, h/2, w, h);
+        const mainBody = Bodies.rectangle(w/2, h/2, w, h, {label: 'player1'});
         this.p1.sensors = {
             bottom: Bodies.rectangle(w/2, h, w * 0.25, 2, { isSensor: true, label: 'p1Bottom' }),
             left: Bodies.rectangle(0, h * 0.5, 2, w * 0.25, { isSensor: true, label: 'p1Left'  }),
@@ -109,9 +112,9 @@ class Play extends Phaser.Scene {
         }
         const compoundBody = Body.create({
             parts: [mainBody, this.p1.sensors.bottom, this.p1.sensors.left, this.p1.sensors.right],
-            frictionStatic: 0,
-            frictionAir: 0.02,
-            friction: 0.1
+            // frictionStatic: 1,
+            // frictionAir: 0.02,
+            // friction: 0.0001
         });
         this.p1.setExistingBody(compoundBody);
         this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
@@ -138,15 +141,20 @@ class Play extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.startFollow(this.p1, true, .9, .9); 
         this.cameras.main.setZoom(2);
-        // this.matter.world.on('collisionstart', function (event) {
-        //     for (var i = 0; i < event.pairs.length; i++) {
-        //         var bodyA = event.pairs[i].bodyA;
-        //         var bodyB = event.pairs[i].bodyB;
-        //         if (bodyA.label === 'p1Bottom' || bodyB.label === 'p1Bottom') {
-        //             // this.touchingGround = true;
-        //         }
-        //     }
-        // });
+        this.matter.world.on('collisionstart', function (event) {
+            for (var i = 0; i < event.pairs.length; i++) {
+                var bodyA = event.pairs[i].bodyA;
+                var bodyB = event.pairs[i].bodyB;
+                if (bodyA.label === 'player1' && bodyB.label === 'bug') {
+                    console.log(this.scene.p1Health);
+                    this.scene.p1Health--;
+                }
+                else if (bodyA.label === 'bug' && bodyB.label === 'player1') {
+                    console.log(this.scene.p1Health);
+                    this.scene.p1Health--;
+                }
+            }
+        });
         this.matter.world.on('collisionactive', function (event) {
             for (var i = 0; i < event.pairs.length; i++) {
                 var bodyA = event.pairs[i].bodyA;
@@ -158,15 +166,13 @@ class Play extends Phaser.Scene {
                 if (bodyA.label === 'p1Right' || bodyB.label === 'p1Right') {
                     this.scene.p1.x -= .08;
                 }
-                if (bodyA.label === 'p1Bp1Leftottom' || bodyB.label === 'p1Left') {
+                if (bodyA.label === 'p1Left' || bodyB.label === 'p1Left') {
                     this.scene.p1.x += .08;
                 }
                 if (bodyA.label === 'sword' && bodyB.label === 'bug') {
-                    console.log(bodyB.gameObject);
                     bodyB.gameObject.destroyObj();
                 }
-                if (bodyA.label === 'bug' && bodyB.label === 'sword') {
-                    // console.log('hit');
+                else if (bodyA.label === 'bug' && bodyB.label === 'sword') {
                     bodyA.gameObject.destroyObj();
                 }
             }
@@ -280,6 +286,11 @@ class Play extends Phaser.Scene {
             this.swordBridge.x = -200;
             this.swordBridge.y = 0;
             this.swordBridge.scaleX = 1;
+        }
+
+        //death condition
+        if (this.p1Health <= 0) {
+            console.log('you lose!');
         }
     }
 

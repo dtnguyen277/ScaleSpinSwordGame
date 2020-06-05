@@ -58,7 +58,6 @@ class Mob extends Phaser.Physics.Matter.Sprite {
         }, null, this);
     }
     destroyObj() {
-        console.log('teststsetest');
         this.setActive(false);
         this.anims.stop();
         this.destroyed = true;
