@@ -99,8 +99,8 @@ class Play extends Phaser.Scene {
         });
         
         // player ----------
-        const p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
-        this.p1 = this.matter.add.sprite(p1Spawn.x, p1Spawn.y, "player");
+        this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
+        this.p1 = this.matter.add.sprite(this.p1Spawn.x, this.p1Spawn.y, "player");
         this.p1.isTouching = { left: false, right: false, ground: false };
         const { Body, Bodies } = Phaser.Physics.Matter.Matter;
         const { width: w, height: h } = this.p1;
@@ -118,7 +118,7 @@ class Play extends Phaser.Scene {
         });
         this.p1.setExistingBody(compoundBody);
         this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
-        this.p1.setPosition(p1Spawn.x, p1Spawn.y);
+        this.p1.setPosition(this.p1Spawn.x, this.p1Spawn.y);
         this.matter.add.mouseSpring();
 
         this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
@@ -146,11 +146,11 @@ class Play extends Phaser.Scene {
                 var bodyA = event.pairs[i].bodyA;
                 var bodyB = event.pairs[i].bodyB;
                 if (bodyA.label === 'player1' && bodyB.label === 'bug') {
-                    console.log(this.scene.p1Health);
+                    // console.log(this.scene.p1Health);
                     this.scene.p1Health--;
                 }
                 else if (bodyA.label === 'bug' && bodyB.label === 'player1') {
-                    console.log(this.scene.p1Health);
+                    // console.log(this.scene.p1Health);
                     this.scene.p1Health--;
                 }
             }
@@ -227,16 +227,22 @@ class Play extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.moveLeft)) {
             this.p1.setFlip(true, false);
             this.p1.anims.play('walk');
-            
         }
         else if (Phaser.Input.Keyboard.JustDown(this.moveRight)) {
             this.p1.setFlip(false, false);
             this.p1.anims.play('walk');
-            
         }
         else if (this.p1.body.velocity.x == 0) {
             this.p1.anims.stop();
         }
+
+        // death from y value
+        if (this.p1.y >= 520) {
+            console.log('You died');
+            this.respawn();
+        }
+
+
         if (this.gameMode % 3 == 1) {
             //rotate bridge sword controls
             if (this.rotateBridge.isDown) {
@@ -290,14 +296,13 @@ class Play extends Phaser.Scene {
 
         //death condition
         if (this.p1Health <= 0) {
-            console.log('you lose!');
+            // console.log('you lose!');
         }
     }
 
-    resetTouching() {
-        this.p1.isTouching.left = false;
-        this.p1.isTouching.right = false;
-        this.p1.isTouching.ground = false;
+    respawn() {
+        this.p1.x = this.p1Spawn.x;
+        this.p1.y = this.p1Spawn.y;
     }
 
 }
