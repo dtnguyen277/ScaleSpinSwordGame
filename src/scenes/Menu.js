@@ -7,14 +7,20 @@ class Menu extends Phaser.Scene {
     preload() {
         // this.load.audio('start', './assets/start.wav');
         // this.load.audio('siren', './assets/siren.wav');
+        this.load.path = "./assets/"
+        this.load.image('logo', 'Title.png');
+        this.load.image('htp', 'HTP.png');
+        this.load.image('play', 'Play.png');
+        this.load.image('credits', 'Credits.png');
+
     }
 
     create() {
         // menu display
         let menuConfig = {
-            fontFamily: 'Courier',
+            fontFamily: 'Verdana',
             fontSize: '28px',
-            backgroundColor: '#F3B141',
+            backgroundColor: '#249fde',
             color: '#843605',
             align: 'right',
             padding: {
@@ -24,25 +30,38 @@ class Menu extends Phaser.Scene {
             fixedWidth: 0
         }
 
-        // menu positioning variables
+        this.add.image(640,200,'logo'); 
+        this.htp = this.add.image(640,400,'htp'); 
+       this.play = this.add.image(640,500,'play'); 
+        this.credits = this.add.image(640,600,'credits');
+        
+        this.htp.name = "htp"; 
+        this.play.name = "play"; 
+
+        this.htp.setInteractive(); 
+        this.play.setInteractive();
+        this.credits.setInteractive(); 
+
+        
+        this.input.on('gameobjectdown', this.onObjectClicked, this); 
+
+
+        //menu positioning variables
         let centerX = game.config.width/2;
         let centerY = game.config.height/2;
         let textSpacer = 64;
 
-        this.add.text(centerX, centerY - textSpacer, 'Spin Sword Game', 
+  
+        /* menuConfig.color = '#FFF';
+        menuConfig.backgroundColor = '#249fde';
+        this.add.text(centerX, centerY, 'Press A or D to Start', 
         menuConfig).setOrigin(.5);
-        menuConfig.color = '#FFF';
-        menuConfig.backgroundColor = '#0000FA';
-        this.add.text(centerX, centerY, 'Use arrow keys to move and jump', 
-        menuConfig).setOrigin(.5);
-        menuConfig.backgroundColor = '#AA00FE';
-        this.add.text(centerX, centerY + textSpacer, 'Use A and D to control your sword', 
+        menuConfig.backgroundColor = '#249fde';
+        this.add.text(centerX, centerY + textSpacer, 'Press R for Controls', 
         menuConfig).setOrigin(.5);
         menuConfig.backgroundColor = "#00AA00"
-        this.add.text(centerX, centerY + textSpacer*2, 'Press < > to continue', 
-        menuConfig).setOrigin(.5);
-        this.add.text(centerX, centerY + textSpacer*3, 'filler', 
-        menuConfig).setOrigin(.5);
+        this.add.text(centerX, centerY + textSpacer*2, 'Press F for Credits', 
+        menuConfig).setOrigin(.5); */
 
         // define keys
         keyLEFT = this.input.keyboard.addKey('A');
@@ -55,5 +74,28 @@ class Menu extends Phaser.Scene {
             this.scene.start("playScene");
         }
 
+        
     }
+
+    onObjectClicked(pointer, gameObject){
+ 
+        var Name = gameObject.name; 
+        console.log(Name);
+
+        switch(Name){
+            case "htp":
+                console.log("clicked"); 
+                break; 
+            case "play":
+                this.scene.start("playScene");
+                break;  
+                 
+                
+        }
+        //console.log("clicked"); 
+        
+    }
+
+
+  
 }
