@@ -29,6 +29,8 @@ class Play extends Phaser.Scene {
         this.level = data.level;
         console.log(data.level);
         this.CURRENT_LEVEL = this.level;
+        this.bugList = [];
+        this.changingLevel = false;
     }
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
@@ -44,6 +46,7 @@ class Play extends Phaser.Scene {
         this.load.image('swordLarge', 'swordLarge.png');
         this.load.image('beetle1', 'TacoBeetle.png');
         this.load.image('endSign', 'sign.png');
+        this.load.image('shoeBoss', 'Shoe.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.image("tiles", "DirtTileset.png");
         this.load.image('tilesGrass', 'Grass.png');
@@ -102,6 +105,12 @@ class Play extends Phaser.Scene {
         this.sword.body.position.y += 32;
         this.sword.setSensor(true);
 
+        //spawn shoe
+        if (this.CURRENT_LEVEL == 1) {
+            this.shoe = map.findObject('Boss Spawn', obj => obj.name === "BossSpawn");
+            this.shoeBoss = new Boss(this, this.shoe.x, this.shoe.y, 'shoeBoss');
+        }
+
         // spawn bugs
         let bugObjects = map.filterObjects("Enemy Spawn", obj => obj.name === "Enemy");
         bugObjects.map((element) => {
@@ -135,7 +144,6 @@ class Play extends Phaser.Scene {
         this.p1.setExistingBody(compoundBody);
         this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
         this.p1.setPosition(this.p1Spawn.x, this.p1Spawn.y);
-        this.matter.add.mouseSpring();
 
         this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
         this.swordBridge.angle = 90;
@@ -202,6 +210,7 @@ class Play extends Phaser.Scene {
                 }
             }
         });
+        this.matter.add.mouseSpring();
     }
 
     update() {
