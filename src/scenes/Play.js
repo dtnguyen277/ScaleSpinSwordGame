@@ -1,4 +1,5 @@
 class Play extends Phaser.Scene {
+    CURRENT_LEVEL;
     constructor() {
         super("playScene");
 
@@ -9,6 +10,8 @@ class Play extends Phaser.Scene {
         this.SWORD_SCALE_SPEED = 0.05;
         this.MIN_SWORD_SCALE = 0.25
         this.MAX_SWORD_SCALE = 3;
+        this.LEVELS = [ "map", "map1" ];
+        this.CURRENT_LEVEL;
         this.maxHealth = 3;
         this.p1Health = this.maxHealth;
         this.gameMode = 0;
@@ -19,6 +22,13 @@ class Play extends Phaser.Scene {
         this.maxSwordLvl = 3;
         this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
         this.bugList = [];
+        this.changingLevel = false;
+    }
+
+    init(data) {
+        this.level = data.level;
+        console.log(data.level);
+        this.CURRENT_LEVEL = this.level;
     }
 
     // load assets here: Bus, Infinite Scrolling road on Y axis
@@ -29,26 +39,27 @@ class Play extends Phaser.Scene {
         {frameWidth: 25, frameHeight: 32, startFrame: 0, endFrame: 9});
         this.load.spritesheet('beetle', 'ScooterBeetle-Sheet.png', 
         {frameWidth: 32, frameHeight: 16, startFrame: 0, endFrame: 2});
-        this.load.spritesheet("kenney_sheet", "colored_transparent_packed.png", {
-            frameWidth: 16,
-            frameHeight: 16
-        });
         this.load.image('sword', 'sword.png');
         this.load.image('swordMed', 'swordMed.png');
         this.load.image('swordLarge', 'swordLarge.png');
         this.load.image('beetle1', 'TacoBeetle.png');
+        this.load.image('endSign', 'sign.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.image("tiles", "DirtTileset.png");
-        this.load.image('bkg', 'bkg.png');
+        this.load.image('tilesGrass', 'Grass.png');
         this.load.tilemapTiledJSON("map", "Level1.json");
+        this.load.tilemapTiledJSON("map1", "Level2.json");
     }
 
     create() {
         // load map
-        const map = this.add.tilemap("map");
+        const map = this.add.tilemap(this.LEVELS[this.CURRENT_LEVEL]);
         const tileset = map.addTilesetImage("DirtTileset", "tiles");
+        const grassBkg = map.addTilesetImage('Grass', 'tilesGrass');
+        
 
         const backgroundLayer = map.createStaticLayer("Background", tileset, 0, 0);
+        const grassLayer = map.createStaticLayer("Grass", grassBkg, 0, 0);
         const groundLayer = map.createStaticLayer("Ground", tileset, 0, 0);
 
         groundLayer.setCollisionByProperty({ collides: true });
@@ -91,12 +102,17 @@ class Play extends Phaser.Scene {
         this.sword.body.position.y += 32;
         this.sword.setSensor(true);
 
-        // test bug
+        // spawn bugs
         let bugObjects = map.filterObjects("Enemy Spawn", obj => obj.name === "Enemy");
         bugObjects.map((element) => {
             let newBug = new Mob(this, element.x, element.y, "beetle1", null, {label: 'bug'});
             this.bugList.push(newBug);
         });
+
+        // end level sign
+        this.end = map.findObject('End Point', obj => obj.name === "Endpoint");
+        this.endLvl = this.matter.add.sprite(this.end.x, this.end.y, 'endSign', null, {label: 'sign', ignoreGravity: true});
+        this.endLvl.setSensor(true);
         
         // player ----------
         this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
@@ -154,6 +170,14 @@ class Play extends Phaser.Scene {
                     // console.log(this.scene.p1Health);
                     this.scene.p1Health--;
                 }
+                if (bodyA.label === 'player1' && bodyB.label === 'sign') {
+                    this.scene.changingLevel = true;
+                    this.scene.restartScene();
+                }
+                else if (bodyA.label === 'sign' && bodyB.label === 'player1') {
+                    this.scene.changingLevel = true;
+                    this.scene.restartScene();
+                }
             }
         });
         this.matter.world.on('collisionactive', function (event) {
@@ -181,6 +205,14 @@ class Play extends Phaser.Scene {
     }
 
     update() {
+        //if next level is about to start
+        if (!this.changingLevel) {
+            //update bugs
+            for (var i = 0; i < this.bugList.length; i++) {
+                this.bugList[i].update();
+            }
+        }
+
         // use this for mob collision and sword
         // console.log(this.matter.overlap(this.sword, this.testing));
 
@@ -304,6 +336,9 @@ class Play extends Phaser.Scene {
     respawn() {
         this.p1.x = this.p1Spawn.x;
         this.p1.y = this.p1Spawn.y;
+    }
+    restartScene() {
+        this.scene.restart({level: 1});
     }
 
 }

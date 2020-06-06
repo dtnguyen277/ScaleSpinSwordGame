@@ -70,16 +70,16 @@ class Menu extends Phaser.Scene {
     }
 
     update() {
-        if (Phaser.Input.Keyboard.JustDown(keyLEFT) || Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
-            this.scene.start("playScene");
-        }
+        // if (Phaser.Input.Keyboard.JustDown(keyLEFT) || Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
+        //     this.scene.start("playScene", {level: 0});
+        // }
 
         
     }
 
     onObjectClicked(pointer, gameObject){
  
-        var Name = gameObject.name; 
+        var Name = gameObject.name;
         console.log(Name);
 
         switch(Name){
@@ -87,7 +87,7 @@ class Menu extends Phaser.Scene {
                 console.log("clicked"); 
                 break; 
             case "play":
-                this.scene.start("playScene");
+                this.scene.start("playScene", {level: 0});
                 break;  
                  
                 
