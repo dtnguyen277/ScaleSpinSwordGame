@@ -21,6 +21,7 @@ let config = {
     }
    },
     scene: [ Menu, Play ],
+    backgroundColor: "#249fde"
 };
 
 let game = new Phaser.Game(config);

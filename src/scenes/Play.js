@@ -141,6 +141,7 @@ class Play extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.startFollow(this.p1, true, .9, .9); 
         this.cameras.main.setZoom(2);
+
         this.matter.world.on('collisionstart', function (event) {
             for (var i = 0; i < event.pairs.length; i++) {
                 var bodyA = event.pairs[i].bodyA;
