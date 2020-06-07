@@ -28,7 +28,6 @@ class Play extends Phaser.Scene {
     init(data) {
         this.level = data.level;
         this.CURRENT_LEVEL = this.level;
-        this.bugList = [];
         this.changingLevel = false;
     }
 
@@ -145,7 +144,7 @@ class Play extends Phaser.Scene {
         this.endLvl.setSensor(true);
 
         // player ----------
-        this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
+        this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player");
         this.p1 = this.matter.add.sprite(this.p1Spawn.x, this.p1Spawn.y, "player");
         this.p1.isTouching = { left: false, right: false, ground: false };
         const { Body, Bodies } = Phaser.Physics.Matter.Matter;
@@ -203,10 +202,12 @@ class Play extends Phaser.Scene {
                     this.scene.updateHP();
                 }
                 if (bodyA.label === 'player1' && bodyB.label === 'sign') {
+                    console.log('b4');
                     this.scene.changingLevel = true;
                     this.scene.restartScene();
                 }
                 else if (bodyA.label === 'sign' && bodyB.label === 'player1') {
+                    console.log('b4');
                     this.scene.changingLevel = true;
                     this.scene.restartScene();
                 }
@@ -248,7 +249,7 @@ class Play extends Phaser.Scene {
                 }
             }
         });
-        this.matter.add.mouseSpring({collisionFilter: { group: this.canDrag } });
+        this.matter.add.mouseSpring();//{collisionFilter: { group: this.canDrag } });
     }
 
     update() {
@@ -398,6 +399,7 @@ class Play extends Phaser.Scene {
         this.updateHP();
     }
     restartScene() {
+        this.bugList = [];
         this.scene.restart({level: 1});
     }
 

@@ -12,6 +12,10 @@ class Menu extends Phaser.Scene {
         this.load.image('htp', 'HTP.png');
         this.load.image('play', 'Play.png');
         this.load.image('credits', 'Credits.png');
+        this.load.image('scroll1', 'Scroll1.png');
+        this.load.image('scroll2', 'Scroll2.png');
+        this.load.image('scroll3', 'Scroll3.png');
+
 
     }
 
@@ -30,18 +34,22 @@ class Menu extends Phaser.Scene {
             fixedWidth: 0
         }
 
+        //On Screen Buttons
         this.add.image(640,200,'logo'); 
         this.htp = this.add.image(640,400,'htp'); 
        this.play = this.add.image(640,500,'play'); 
         this.credits = this.add.image(640,600,'credits');
         
+        
         this.htp.name = "htp"; 
         this.play.name = "play"; 
+        this.credits.name = "credits"; 
+       
 
         this.htp.setInteractive(); 
         this.play.setInteractive();
         this.credits.setInteractive(); 
-
+       
         
         this.input.on('gameobjectdown', this.onObjectClicked, this); 
 
@@ -70,27 +78,45 @@ class Menu extends Phaser.Scene {
     }
 
     update() {
-        // if (Phaser.Input.Keyboard.JustDown(keyLEFT) || Phaser.Input.Keyboard.JustDown(keyRIGHT)) {
-        //     this.scene.start("playScene", {level: 0});
-        // }
 
         
     }
 
     onObjectClicked(pointer, gameObject){
  
-        var Name = gameObject.name;
+        var Name = gameObject.name; 
         console.log(Name);
 
         switch(Name){
             case "htp":
-                console.log("clicked"); 
+                this.scroll = this.add.image(640,350,'scroll1');
+                this.scroll.setVisible(true);
+                this.scroll.name = "scroll1";  
+                this.scroll.setInteractive(); 
                 break; 
+
             case "play":
                 this.scene.start("playScene", {level: 0});
-                break;  
-                 
+                break;
                 
+            case "scroll1":
+                this.scroll.setVisible(false);
+                this.scroll = this.add.image(640,350,'scroll2');
+                this.scroll.setVisible(true);
+                this.scroll.name = "closeScroll";  
+                this.scroll.setInteractive(); 
+                break;
+            
+            case "closeScroll":
+                this.scroll.setVisible(false);
+                break;
+
+            case "credits":
+                this.scroll = this.add.image(640,350,'scroll3');
+                this.scroll.setVisible(true);
+                this.scroll.name = "closeScroll";  
+                this.scroll.setInteractive(); 
+                break; 
         }
         //console.log("clicked"); 
         
