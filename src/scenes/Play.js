@@ -310,10 +310,16 @@ class Play extends Phaser.Scene {
                     else if (this.tutoPhase == 4) {
                         if (this.rotateBridge.isDown) {
                             this.tutoPhase = 5;
-                            this.tutoSign.setTexture('Fkey');
+                            this.tutoSign.setTexture('QEkey');
                         }
                     }
                     else if (this.tutoPhase == 5) {
+                        if (this.scaleDown.isDown || this.scaleUp.isDown) {
+                            this.tutoPhase = 6;
+                            this.tutoSign.setTexture('Fkey');
+                        }
+                    }
+                    else if (this.tutoPhase == 6) {
                         if (this.gameModeToggle.isDown) {
                             this.tutoPhase = -1;
                             this.tutoSign.destroy();
