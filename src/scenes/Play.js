@@ -262,7 +262,7 @@ class Play extends Phaser.Scene {
                 }
             }
         });
-        this.matter.add.mouseSpring();//{collisionFilter: { group: this.canDrag } });
+        this.matter.add.mouseSpring({collisionFilter: { group: this.canDrag } });
     }
 
     update() {
