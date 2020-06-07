@@ -5,23 +5,12 @@ class Mob extends Phaser.Physics.Matter.Sprite {
         this.ACCELERATION = .75;
         this.DIRECTION = true;
         this.destroyed = false;
+        this.soundPlayed = false;
+        this.sfxDeath = scene.sound.add('bugD');
         this.anims.play('bugWalk');
-
-        // const { Body, Bodies } = Phaser.Physics.Matter.Matter;
-        // const { width: w, height: h } = this;
-        // const mainBody = Bodies.rectangle(w/2, h/2, w, h);
-        // this.sensors = {
-        //     left: Bodies.rectangle(0, h * 0.5, 2, w * 0.25, { isSensor: true }),
-        //     right: Bodies.rectangle(w, h * 0.5, 2, w * 0.25, { isSensor: true }),
-        // }
-        // const compoundBody = Body.create({
-        //     parts: [mainBody, this.sensors.right, this.sensors.left],
-        // });
-        // this.setExistingBody(compoundBody);
-        // this.setPosition(x, y);
-
         this.setFixedRotation(); // Sets inertia to infinity so the player can't rotate
         this.changeDirTimer();
+        // this.sfxDeath.play();
     }
 
     update() {
@@ -39,6 +28,9 @@ class Mob extends Phaser.Physics.Matter.Sprite {
             }
         }
         if (this.destroyed) {
+            if (!this.soundPlayed) {
+                this.playSound();
+            }
             this.destroy();
         }
     }
@@ -54,5 +46,9 @@ class Mob extends Phaser.Physics.Matter.Sprite {
         this.setActive(false);
         this.anims.stop();
         this.destroyed = true;
+    }
+    playSound() {
+        this.sfxDeath.play();
+        this.soundPlayed = true;
     }
 }

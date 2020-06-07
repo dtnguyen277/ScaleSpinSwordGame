@@ -23,6 +23,8 @@ class Play extends Phaser.Scene {
         this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
         this.bugList = [];
         this.changingLevel = false;
+        this.gameOver = false;
+        this.endend = false;
     }
 
     init(data) {
@@ -46,6 +48,9 @@ class Play extends Phaser.Scene {
         this.load.image('endSign', 'sign.png');
         this.load.image('shoeBoss', 'Shoe.png');
         this.load.audio('jump', 'jump.mp3');
+        this.load.audio('playerDamage', 'playerDMG.mp3');
+        this.load.audio('music', 'swordgame.mp3');
+        this.load.audio('slash', 'slash.wav');
         this.load.image("tiles", "DirtTileset.png");
         this.load.image('tilesGrass', 'Grass.png');
         this.load.tilemapTiledJSON("map", "Level1.json");
@@ -54,6 +59,18 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+        // music
+        this.menuAudio = this.sound.add('music');
+        var musicConfig = {
+            mute: false,
+            volume: .05,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: true,
+            delay: 0
+        }
+        this.menuAudio.play(musicConfig);
         var shoeHitBox = this.cache.json.get('shoebox');
 
         // load map
@@ -157,12 +174,9 @@ class Play extends Phaser.Scene {
         }
         const compoundBody = Body.create({
             parts: [mainBody, this.p1.sensors.bottom, this.p1.sensors.left, this.p1.sensors.right],
-            // frictionStatic: 1,
-            // frictionAir: 0.02,
-            // friction: 0.0001
         });
         this.p1.setExistingBody(compoundBody);
-        this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
+        this.p1.setFixedRotation(); // Sets inertia to infinity so the player can't rotate
         this.p1.setPosition(this.p1Spawn.x, this.p1Spawn.y);
 
         this.swordBridge = this.matter.add.image(-200, -100, this.swordSize[this.swordCurrentMod], 
@@ -178,6 +192,7 @@ class Play extends Phaser.Scene {
         this.jump = this.input.keyboard.addKey('SPACE');
         this.gameModeToggle = this.input.keyboard.addKey('F');
         this.rotateBridge = this.input.keyboard.addKey('R');
+        this.restartGame = this.input.keyboard.addKey('W');
         this.p1Pos = new Phaser.Math.Vector2();
         this.swordBridgeSpawn = new Phaser.Math.Vector2();
 
@@ -193,13 +208,11 @@ class Play extends Phaser.Scene {
                 var bodyB = event.pairs[i].bodyB;
                 if (bodyA.label === 'player1' && bodyB.label === 'bug') {
                     // console.log(this.scene.p1Health);
-                    this.scene.p1Health--;
-                    this.scene.updateHP();
+                    this.scene.takeDamage(1);
                 }
                 else if (bodyA.label === 'bug' && bodyB.label === 'player1') {
                     // console.log(this.scene.p1Health);
-                    this.scene.p1Health--;
-                    this.scene.updateHP();
+                    this.scene.takeDamage(1);
                 }
                 if (bodyA.label === 'player1' && bodyB.label === 'sign') {
                     console.log('b4');
@@ -212,17 +225,17 @@ class Play extends Phaser.Scene {
                     this.scene.restartScene();
                 }
                 if (bodyA.label === 'player1' && bodyB.label === 'botShoe') {
-                    this.scene.p1Health--;
-                    this.scene.updateHP();
+                    this.scene.takeDamage(1);
                 }
                 else if (bodyA.label === 'botShoe' && bodyB.label === 'player1') {
-                    this.scene.p1Health--;
-                    this.scene.updateHP();
+                    this.scene.takeDamage(1);
                 }
                 if (bodyA.label === 'sword' && bodyB.label === 'xBox') {
+                    this.scene.sound.play('slash');
                     this.scene.shoeBoss.takeDamage();
                 }
                 else if (bodyA.label === 'xBox' && bodyB.label === 'sword') {
+                    this.scene.sound.play('slash');
                     this.scene.shoeBoss.takeDamage();
                 }
                 if (bodyA.label === 'sword' && bodyB.label === 'bug') {
@@ -261,6 +274,19 @@ class Play extends Phaser.Scene {
                 this.bugList[i].update();
             }
             if (this.CURRENT_LEVEL == 1) {
+                if (Phaser.Input.Keyboard.JustDown(this.restartGame)) {
+                    this.menuAudio.stop();
+                    this.bugList = [];
+                    this.scene.start("playScene", {level: 0});
+                }
+                if (this.shoeBoss.health <= 0) {
+                    this.gameOver = true;
+                    if (this.gameOver) {
+                        this.gameOver = false;
+                        this.endend = true;
+                        this.endgame();
+                    }
+                }
                 this.shoeBoss.update();
             }
         }
@@ -323,8 +349,7 @@ class Play extends Phaser.Scene {
 
         // death from y value
         if (this.p1.y >= 520) {
-            console.log('You died');
-            this.respawn();
+            this.takeDamage(3);
         }
 
 
@@ -399,8 +424,30 @@ class Play extends Phaser.Scene {
         this.updateHP();
     }
     restartScene() {
+        this.menuAudio.stop();
         this.bugList = [];
         this.scene.restart({level: 1});
+    }
+    takeDamage(amt) {
+        this.p1Health -= amt;
+        this.sound.play('playerDamage');
+        this.p1.setVelocityY(-3);
+        this.updateHP();
+    }
+    endgame() {
+        this.endConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#FF0000',
+            color: '#00FF00',
+            align: 'right',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+        }
+        this.endTxt = this.add.text(1280/2, 720/2, "YOU WON! PRESS 'W' TO RESTART", this.endConfig).setOrigin(.5);
+        this.endTxt.setScrollFactor(0);
     }
 
 }

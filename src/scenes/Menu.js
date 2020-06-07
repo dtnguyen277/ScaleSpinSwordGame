@@ -15,6 +15,7 @@ class Menu extends Phaser.Scene {
         this.load.image('scroll1', 'Scroll1.png');
         this.load.image('scroll2', 'Scroll2.png');
         this.load.image('scroll3', 'Scroll3.png');
+        this.load.audio('bugD', "bugDeath.wav");
 
 
     }

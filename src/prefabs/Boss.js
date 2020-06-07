@@ -6,9 +6,6 @@ class Boss extends Phaser.Physics.Matter.Sprite {
         this.JUMP_ACCELERATION = 12;
         this.destroyed = false;
 
-        const { Body, Bodies } = Phaser.Physics.Matter.Matter;
-        const { width: w, height: h } = this;
-        const mainBody = this.body.parts;
         this.health = 3;
         this.bottomShoe = this.scene.matter.add.rectangle(x-44, y+84, 255, 8, 
         { isSensor: true, ignoreGravity: true, label: 'botShoe' });
@@ -52,5 +49,8 @@ class Boss extends Phaser.Physics.Matter.Sprite {
     destroyObj() {
         this.setActive(false);
         this.destroyed = true;
+    }
+    getHealth() {
+        return this.health;
     }
 }
