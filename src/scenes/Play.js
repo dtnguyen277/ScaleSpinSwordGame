@@ -25,11 +25,13 @@ class Play extends Phaser.Scene {
         this.changingLevel = false;
         this.gameOver = false;
         this.endend = false;
+        this.tutoPhase = 0;
     }
 
     init(data) {
         this.level = data.level;
         this.CURRENT_LEVEL = this.level;
+        this.gameMode = 0;
         this.changingLevel = false;
     }
 
@@ -47,6 +49,10 @@ class Play extends Phaser.Scene {
         this.load.image('beetle1', 'TacoBeetle.png');
         this.load.image('endSign', 'sign.png');
         this.load.image('shoeBoss', 'Shoe.png');
+        this.load.image('Fkey', 'FButton.png');
+        this.load.image('QEkey', 'QEButton.png');
+        this.load.image('Rkey', 'RButton.png');
+        this.load.image('mouse', 'cursor.png');
         this.load.audio('jump', 'jump.mp3');
         this.load.audio('playerDamage', 'playerDMG.mp3');
         this.load.audio('music', 'swordgame.mp3');
@@ -160,6 +166,9 @@ class Play extends Phaser.Scene {
         this.endLvl = this.matter.add.sprite(this.end.x, this.end.y, 'endSign', null, {label: 'sign', ignoreGravity: true});
         this.endLvl.setSensor(true);
 
+        //in game tutorial
+        this.tutoSign = this.matter.add.sprite(-100, -100, 'Fkey', null, {ignoreGravity: true, isSensor: true});
+
         // player ----------
         this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player");
         this.p1 = this.matter.add.sprite(this.p1Spawn.x, this.p1Spawn.y, "player");
@@ -262,7 +271,15 @@ class Play extends Phaser.Scene {
                 }
             }
         });
-        this.matter.add.mouseSpring({collisionFilter: { group: this.canDrag } });
+        this.input.on('pointerdown', function (pointer) {
+            if (pointer.leftButtonDown()) {
+                if (this.tutoPhase == 2) {
+                    this.tutoPhase = 3;
+                    this.tutoSign.setTexture('Rkey');
+                }
+            }
+        }, this);
+        this.matter.add.mouseSpring();//{collisionFilter: { group: this.canDrag } });
     }
 
     update() {
@@ -272,6 +289,38 @@ class Play extends Phaser.Scene {
             //update bugs
             for (var i = 0; i < this.bugList.length; i++) {
                 this.bugList[i].update();
+            }
+            if (this.CURRENT_LEVEL == 0) {
+                if (this.p1.x >= 1880 && this.tutoPhase == 0) {
+                    this.tutoPhase = 1;
+                }
+                if (this.tutoPhase >= 1) {
+                    this.tutoSign.x = this.p1.x;
+                    this.tutoSign.y = this.p1.y - 100;
+                    if (this.tutoPhase == 1) { 
+                        if (this.gameModeToggle.isDown) {
+                            this.tutoPhase = 2;
+                            this.tutoSign.setTexture('mouse');
+                        }
+                    }
+                    else if (this.tutoPhase == 3) {
+                        this.tutoPhase = 4;
+                        this.tutoSign.setTexture('Rkey');
+                    }
+                    else if (this.tutoPhase == 4) {
+                        if (this.rotateBridge.isDown) {
+                            this.tutoPhase = 5;
+                            this.tutoSign.setTexture('Fkey');
+                        }
+                    }
+                    else if (this.tutoPhase == 5) {
+                        if (this.gameModeToggle.isDown) {
+                            console.log('end');
+                            this.tutoPhase = -1;
+                            this.tutoSign.destroy();
+                        }
+                    }
+                }
             }
             if (this.CURRENT_LEVEL == 1) {
                 if (Phaser.Input.Keyboard.JustDown(this.restartGame)) {
@@ -421,6 +470,7 @@ class Play extends Phaser.Scene {
         this.p1.x = this.p1Spawn.x;
         this.p1.y = this.p1Spawn.y;
         this.p1Health = this.maxHealth;
+        this.gameMode = 0;
         this.updateHP();
     }
     restartScene() {
