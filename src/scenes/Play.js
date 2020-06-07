@@ -27,7 +27,6 @@ class Play extends Phaser.Scene {
 
     init(data) {
         this.level = data.level;
-        console.log(data.level);
         this.CURRENT_LEVEL = this.level;
         this.bugList = [];
         this.changingLevel = false;
@@ -52,9 +51,12 @@ class Play extends Phaser.Scene {
         this.load.image('tilesGrass', 'Grass.png');
         this.load.tilemapTiledJSON("map", "Level1.json");
         this.load.tilemapTiledJSON("map1", "Level2.json");
+        this.load.json('shoebox', 'shoe.json');
     }
 
     create() {
+        var shoeHitBox = this.cache.json.get('shoebox');
+
         // load map
         const map = this.add.tilemap(this.LEVELS[this.CURRENT_LEVEL]);
         const tileset = map.addTilesetImage("DirtTileset", "tiles");
@@ -76,6 +78,21 @@ class Play extends Phaser.Scene {
         //     faceColor: new Phaser.Display.Color(40, 39, 37, 255)                // color of colliding face edges
         // });
         
+        // health info
+        this.healthConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#FFFFFF',
+            color: '#FF0000',
+            align: 'right',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+        }
+        this.healthText = this.add.text(330, 190, "HP: " + this.p1Health , this.healthConfig);
+        this.healthText.setScrollFactor(0);
+
         //animation config
         this.anims.create({
             repeat: -1,
@@ -98,18 +115,22 @@ class Play extends Phaser.Scene {
             { start: 0, end: 2, first: 0}),
             frameRate: 10
         });
-
-        // create sword
-        this.sword = this.matter.add.sprite(game.config.width/2, game.config.height/2 - 40, 'sword',
-         null, {ignoreGravity: true, label: 'sword'}).setOrigin(.5, 1.5);
-        this.sword.body.position.y += 32;
-        this.sword.setSensor(true);
+        
+        // create draggable group
+        this.canDrag = this.matter.world.nextGroup(false);
 
         //spawn shoe
         if (this.CURRENT_LEVEL == 1) {
             this.shoe = map.findObject('Boss Spawn', obj => obj.name === "BossSpawn");
-            this.shoeBoss = new Boss(this, this.shoe.x, this.shoe.y, 'shoeBoss');
+            this.shoeBoss = new Boss(this, this.shoe.x, this.shoe.y, 'shoeBoss', null, 
+            {shape: shoeHitBox.Shoe});
         }
+        // create sword
+        this.sword = this.matter.add.image(game.config.width/2, game.config.height/2 - 40, 'sword',
+         null, {ignoreGravity: true, label: 'sword'}).setOrigin(.5, 1.5);
+        this.sword.body.position.y += 32;
+        this.sword.setSensor(true);
+
 
         // spawn bugs
         let bugObjects = map.filterObjects("Enemy Spawn", obj => obj.name === "Enemy");
@@ -122,7 +143,7 @@ class Play extends Phaser.Scene {
         this.end = map.findObject('End Point', obj => obj.name === "Endpoint");
         this.endLvl = this.matter.add.sprite(this.end.x, this.end.y, 'endSign', null, {label: 'sign', ignoreGravity: true});
         this.endLvl.setSensor(true);
-        
+
         // player ----------
         this.p1Spawn = map.findObject("Player Spawn", obj => obj.name === "Player ");
         this.p1 = this.matter.add.sprite(this.p1Spawn.x, this.p1Spawn.y, "player");
@@ -131,7 +152,7 @@ class Play extends Phaser.Scene {
         const { width: w, height: h } = this.p1;
         const mainBody = Bodies.rectangle(w/2, h/2, w, h, {label: 'player1'});
         this.p1.sensors = {
-            bottom: Bodies.rectangle(w/2, h, w * 0.25, 2, { isSensor: true, label: 'p1Bottom' }),
+            bottom: Bodies.rectangle(w/2, h, w * 0.75, 2, { isSensor: true, label: 'p1Bottom' }),
             left: Bodies.rectangle(0, h * 0.5, 2, w * 0.25, { isSensor: true, label: 'p1Left'  }),
             right: Bodies.rectangle(w, h * 0.5, 2, w * 0.25, { isSensor: true, label: 'p1Right'  }),
         }
@@ -145,7 +166,8 @@ class Play extends Phaser.Scene {
         this.p1.setFixedRotation() // Sets inertia to infinity so the player can't rotate
         this.p1.setPosition(this.p1Spawn.x, this.p1Spawn.y);
 
-        this.swordBridge = this.matter.add.sprite(-200, 0 - 100, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
+        this.swordBridge = this.matter.add.image(-200, -100, this.swordSize[this.swordCurrentMod], 
+        null, {isStatic: true, ignoreGravity: true}).setCollisionGroup(this.canDrag);
         this.swordBridge.angle = 90;
 
         // add all necessary keys
@@ -173,10 +195,12 @@ class Play extends Phaser.Scene {
                 if (bodyA.label === 'player1' && bodyB.label === 'bug') {
                     // console.log(this.scene.p1Health);
                     this.scene.p1Health--;
+                    this.scene.updateHP();
                 }
                 else if (bodyA.label === 'bug' && bodyB.label === 'player1') {
                     // console.log(this.scene.p1Health);
                     this.scene.p1Health--;
+                    this.scene.updateHP();
                 }
                 if (bodyA.label === 'player1' && bodyB.label === 'sign') {
                     this.scene.changingLevel = true;
@@ -185,6 +209,26 @@ class Play extends Phaser.Scene {
                 else if (bodyA.label === 'sign' && bodyB.label === 'player1') {
                     this.scene.changingLevel = true;
                     this.scene.restartScene();
+                }
+                if (bodyA.label === 'player1' && bodyB.label === 'botShoe') {
+                    this.scene.p1Health--;
+                    this.scene.updateHP();
+                }
+                else if (bodyA.label === 'botShoe' && bodyB.label === 'player1') {
+                    this.scene.p1Health--;
+                    this.scene.updateHP();
+                }
+                if (bodyA.label === 'sword' && bodyB.label === 'xBox') {
+                    this.scene.shoeBoss.takeDamage();
+                }
+                else if (bodyA.label === 'xBox' && bodyB.label === 'sword') {
+                    this.scene.shoeBoss.takeDamage();
+                }
+                if (bodyA.label === 'sword' && bodyB.label === 'bug') {
+                    bodyB.gameObject.destroyObj();
+                }
+                else if (bodyA.label === 'bug' && bodyB.label === 'sword') {
+                    bodyA.gameObject.destroyObj();
                 }
             }
         });
@@ -202,23 +246,21 @@ class Play extends Phaser.Scene {
                 if (bodyA.label === 'p1Left' || bodyB.label === 'p1Left') {
                     this.scene.p1.x += .08;
                 }
-                if (bodyA.label === 'sword' && bodyB.label === 'bug') {
-                    bodyB.gameObject.destroyObj();
-                }
-                else if (bodyA.label === 'bug' && bodyB.label === 'sword') {
-                    bodyA.gameObject.destroyObj();
-                }
             }
         });
-        this.matter.add.mouseSpring();
+        this.matter.add.mouseSpring({collisionFilter: { group: this.canDrag } });
     }
 
     update() {
+        // console.log(this.p1.x + " " + this.p1.y);
         //if next level is about to start
         if (!this.changingLevel) {
             //update bugs
             for (var i = 0; i < this.bugList.length; i++) {
                 this.bugList[i].update();
+            }
+            if (this.CURRENT_LEVEL == 1) {
+                this.shoeBoss.update();
             }
         }
 
@@ -288,7 +330,7 @@ class Play extends Phaser.Scene {
         if (this.gameMode % 3 == 1) {
             //rotate bridge sword controls
             if (this.rotateBridge.isDown) {
-                this.swordBridge.angle += 1;
+                this.swordBridge.angle -= 1;
             }
             // sword scale controls
             if (Phaser.Input.Keyboard.JustDown(this.scaleDown)) {
@@ -299,7 +341,8 @@ class Play extends Phaser.Scene {
                 }
                 this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
                 this.swordBridge.destroy(true);
-                this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge = this.matter.add.image(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, 
+                    this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true}).setCollisionGroup(this.canDrag);
                 this.swordBridge.angle = 90;
             }
             if (Phaser.Input.Keyboard.JustDown(this.scaleUp)) {
@@ -307,7 +350,8 @@ class Play extends Phaser.Scene {
                 this.swordCurrent++;
                 this.swordCurrentMod = this.swordCurrent % this.maxSwordLvl;
                 this.swordBridge.destroy(true);
-                this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true});
+                this.swordBridge = this.matter.add.image(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, 
+                    this.swordSize[this.swordCurrentMod], null, {ignoreGravity: true}).setCollisionGroup(this.canDrag);
                 this.swordBridge.angle = 90;
             }
         }
@@ -318,7 +362,8 @@ class Play extends Phaser.Scene {
         // gamemode 1 is bridge mode scale and change position of sword
         // gamemode 2 is walk around with no swinging sword
         if (this.gameMode % 3 == 1 && this.oneToggle) {
-            this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y, this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true});
+            this.swordBridge = this.matter.add.sprite(this.swordBridgeSpawn.x, this.swordBridgeSpawn.y,
+            this.swordSize[this.swordCurrentMod], null, {isStatic: true, ignoreGravity: true}).setCollisionGroup(this.canDrag);
             this.swordBridge.angle = 90;
             this.swordBridge.x = this.p1.x;
             this.swordBridge.y = this.p1.y -60;
@@ -339,12 +384,18 @@ class Play extends Phaser.Scene {
         //death condition
         if (this.p1Health <= 0) {
             // console.log('you lose!');
+            this.respawn();
         }
     }
 
+    updateHP() {
+        this.healthText.text = "HP: " + this.p1Health;
+    }
     respawn() {
         this.p1.x = this.p1Spawn.x;
         this.p1.y = this.p1Spawn.y;
+        this.p1Health = this.maxHealth;
+        this.updateHP();
     }
     restartScene() {
         this.scene.restart({level: 1});
