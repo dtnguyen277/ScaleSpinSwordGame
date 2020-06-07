@@ -7,7 +7,7 @@ class Mob extends Phaser.Physics.Matter.Sprite {
         this.destroyed = false;
         // Phaser.Physics.Matter.Matter.Body.setInertia(this.body, Infinity);
         this.anims.play('bugWalk');
-        // this.scene.events.on("update", this.update, this);
+        this.scene.events.on("update", this.update, this);
 
         // const { Body, Bodies } = Phaser.Physics.Matter.Matter;
         // const { width: w, height: h } = this;
