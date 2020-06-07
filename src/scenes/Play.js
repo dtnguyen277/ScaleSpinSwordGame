@@ -279,7 +279,7 @@ class Play extends Phaser.Scene {
                 }
             }
         }, this);
-        this.matter.add.mouseSpring();//{collisionFilter: { group: this.canDrag } });
+        this.matter.add.mouseSpring({collisionFilter: { group: this.canDrag } });
     }
 
     update() {
@@ -315,7 +315,6 @@ class Play extends Phaser.Scene {
                     }
                     else if (this.tutoPhase == 5) {
                         if (this.gameModeToggle.isDown) {
-                            console.log('end');
                             this.tutoPhase = -1;
                             this.tutoSign.destroy();
                         }
