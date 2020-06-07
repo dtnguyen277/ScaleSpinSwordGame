@@ -6,7 +6,6 @@ class Mob extends Phaser.Physics.Matter.Sprite {
         this.DIRECTION = true;
         this.destroyed = false;
         this.anims.play('bugWalk');
-        this.scene.events.on("update", this.update, this);
 
         // const { Body, Bodies } = Phaser.Physics.Matter.Matter;
         // const { width: w, height: h } = this;
@@ -30,17 +29,12 @@ class Mob extends Phaser.Physics.Matter.Sprite {
             if (this.body.velocity.x > .002) this.setVelocityX(.002);
             else if (this.body.velocity.x < -.002) this.setVelocityX(-.002);
 
-            // if (this.body.velocity.x == 0) {
-            //     this.DIRECTION = !this.DIRECTION;
-            // }
             if (this.DIRECTION) {
                 this.setFlip(true, false);
-                // this.setVelocityX(this.ACCELERATION);
                 this.applyForce({ x:.002, y: 0 });
             }
             else {
                 this.setFlip(false, false);
-                // this.setVelocityX(-this.ACCELERATION);
                 this.applyForce({ x:-.002, y: 0 });
             }
         }
